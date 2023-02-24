@@ -6,7 +6,6 @@ import ReactDOM from "react-dom/client";
 
 import App from "./App";
 import theme from "./mui/theme";
-// import { Pro } from '@sendbird/chat'
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

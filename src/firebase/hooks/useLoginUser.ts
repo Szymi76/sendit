@@ -29,9 +29,6 @@ const useLoginUser = () => {
       // status w przypadku sukcesu
       setStatus({ isLoading: false, error: null });
     } catch (err) {
-      // status w przypadku błędu
-      setStatus({ isLoading: false, error: new Error("Coś poszło nie tak") });
-
       if (String(err).includes("(auth/user-not-found)")) {
         setStatus({ isLoading: false, error: new Error("Użytkownik nie istnieje") });
       } else if (String(err).includes("(auth/wrong-password)")) {

@@ -4,8 +4,9 @@ import { Link, Typography } from "@mui/material";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Link as RoterLink } from "react-router-dom";
 
+import CanyonImage from "../../assets/canyon.jpg";
 import useLoginUser from "../../firebase/hooks/useLoginUser";
-import * as Content from "./styled";
+import * as Content from "./Content";
 
 const defaultValues = { email: "", password: "" };
 
@@ -26,7 +27,7 @@ const Login = () => {
   return (
     <Content.Wrapper py={10}>
       <Content.Main maxWidth="md" sx={{ boxShadow: 4 }}>
-        <Content.Photo />
+        <Content.Photo src={CanyonImage} alt="Zdjęcie kanionu" />
         <Content.Form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" fontWeight={700} mb={3} width="100%">
             Zaloguj się
@@ -65,7 +66,7 @@ const Login = () => {
           <Typography width="100%" variant="subtitle2" mb={1} sx={{ color: "error.main" }}>
             {error?.message ?? ""}
           </Typography>
-          <Link component={RoterLink} to="/stworz-konto" width="100%" underline="hover">
+          <Link component={RoterLink} to="/stworz-konto">
             Nie masz konta?
           </Link>
         </Content.Form>
