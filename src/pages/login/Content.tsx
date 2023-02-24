@@ -1,8 +1,8 @@
 import { styled, TextField, TextFieldProps } from "@mui/material";
 import { Box } from "@mui/system";
 
-import CanyonImage from "../../assets/canyon.jpg";
-import MacbookImage from "../../assets/macbook.jpg";
+// import CanyonImage from "../../assets/canyon.jpg";
+// import MacbookImage from "../../assets/macbook.jpg";
 
 // tło w postaci gradientu
 export const Wrapper = styled(Box)({
@@ -25,7 +25,7 @@ export const Main = styled(Box)(({ theme }) => ({
 // zdjęcie po lewej stronie
 export const Photo = ({ src, alt }: { src: string; alt: string }) => {
   return (
-    <Box width="40%" display={{ xs: "none", md: "block" }}>
+    <Box position="relative" width="40%" display={{ xs: "none", md: "block" }}>
       <img width="100%" height="100%" src={src} alt={alt} style={{ objectFit: "cover" }} />
     </Box>
   );

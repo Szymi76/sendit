@@ -4,7 +4,7 @@ import { Link, Typography } from "@mui/material";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Link as RoterLink } from "react-router-dom";
 
-import UmbrellasImage from "../../assets/umbrellas.jpg";
+// import UmbrellasImage from "../../assets/umbrellas.jpg";
 import useRegisterUser from "../../firebase/hooks/useRegisterUser";
 import * as Content from "../login/Content";
 
@@ -28,7 +28,7 @@ const Register = () => {
   return (
     <Content.Wrapper py={10}>
       <Content.Main maxWidth="md" sx={{ boxShadow: 4 }}>
-        <Content.Photo src={UmbrellasImage} alt="Dużo kolorowych parasoli" />
+        <Content.Photo src="https://picsum.photos/500/800" alt="Dużo kolorowych parasoli" />
         <Content.Form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" fontWeight={700} mb={3} width="100%">
             Stwórz konto

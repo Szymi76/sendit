@@ -2,7 +2,7 @@ import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import { LoadingButton } from "@mui/lab";
 import { Link, Typography } from "@mui/material";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { Link as RoterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 
 import CanyonImage from "../../assets/canyon.jpg";
 import useLoginUser from "../../firebase/hooks/useLoginUser";
@@ -27,7 +27,7 @@ const Login = () => {
   return (
     <Content.Wrapper py={10}>
       <Content.Main maxWidth="md" sx={{ boxShadow: 4 }}>
-        <Content.Photo src={CanyonImage} alt="Zdjęcie kanionu" />
+        <Content.Photo src="https://picsum.photos/500/800" alt="Zdjęcie kanionu" />
         <Content.Form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" fontWeight={700} mb={3} width="100%">
             Zaloguj się
@@ -66,7 +66,7 @@ const Login = () => {
           <Typography width="100%" variant="subtitle2" mb={1} sx={{ color: "error.main" }}>
             {error?.message ?? ""}
           </Typography>
-          <Link component={RoterLink} to="/stworz-konto">
+          <Link component={RouterLink} to="/stworz-konto">
             Nie masz konta?
           </Link>
         </Content.Form>

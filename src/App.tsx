@@ -1,6 +1,8 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import * as Access from "./layouts/Access";
+import Layout from "./layouts/Layout";
+import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/register";
 
@@ -8,8 +10,19 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/zaloguj-sie" element={<Login />} />
-        <Route path="/stworz-konto" element={<Register />} />
+        <Route element={<Layout />}>
+          <Route element={<Access.NotAuthenticated />}>
+            <Route path="/zaloguj-sie" element={<Login />} />
+            <Route path="/stworz-konto" element={<Register />} />
+          </Route>
+          <Route element={<Access.Authenticated />}>
+            <Route path="/private" element={<h1>Tylko dla zalogowanych</h1>} />
+          </Route>
+          <Route element={<Access.All />}>
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<Home />} />
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );
