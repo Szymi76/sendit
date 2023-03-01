@@ -6,6 +6,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
   width: "100%",
   height: 44,
   position: "fixed",
+  top: 0,
   zIndex: 30,
   backgroundColor: "rgba(79, 70, 229, .9)",
   backdropFilter: "blur(5px)",

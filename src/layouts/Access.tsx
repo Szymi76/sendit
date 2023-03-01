@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import Nav from "../components/Nav";
@@ -19,10 +20,10 @@ export const Authenticated = () => {
     );
   else if (user)
     return (
-      <>
+      <Box pt="44px" minHeight="100vh" bgcolor={(theme) => theme.palette.background.default}>
         <Nav />
         <Outlet />
-      </>
+      </Box>
     );
   else return <Navigate to="/zaloguj-sie" state={{ from }} />;
 };

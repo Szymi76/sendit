@@ -22,6 +22,7 @@ const Home = () => {
       {user ? user.displayName : "Nie zalogowano"}
       <Link to="/zaloguj-sie">Zaloguj sie</Link>
       <Link to="/private">Tylko dla zalogowanych</Link>
+      <Link to="/chat">chat</Link>
       <Button variant="contained">123</Button>
     </div>
   );

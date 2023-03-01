@@ -8,6 +8,9 @@ const theme = createTheme({
     primary: {
       main: "#4f46e5",
     },
+    background: {
+      default: "#f8fafc",
+    },
   },
   components: {
     MuiLink: {

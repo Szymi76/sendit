@@ -1,8 +1,8 @@
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { useState } from "react";
 
-import sb from "../../sendbird";
 import { auth } from "../index";
+import createDocument from "../utils/createDocument";
 
 const DEFAULT_PHOTO_URL = "https://sendbird.com/main/img/profiles/profile_05_512px.png";
 
@@ -29,9 +29,16 @@ const useRegisterUser = () => {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(user, { displayName, photoURL: DEFAULT_PHOTO_URL });
 
-      // łączenie się z sendbird-em, tworzenie użytkownika i aktualizacja danych
-      await sb.connect(user.uid, import.meta.env.VITE_APP_TOKEN);
-      await sb.updateCurrentUserInfo({ nickname: displayName, profileUrl: DEFAULT_PHOTO_URL });
+      const userObject = {
+        uid: user.uid,
+        displayName,
+        email,
+        photoURL: DEFAULT_PHOTO_URL,
+        friends: [],
+      };
+
+      // dodawanie użytkownika do bazy danych
+      await createDocument("users", user.uid, userObject);
 
       // status w przypadku sukcesu
       setStatus({ isLoading: false, error: null });

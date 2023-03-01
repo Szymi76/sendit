@@ -1,7 +1,6 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 
-import sb from "../../sendbird";
 import { auth } from "../index";
 
 interface LoginUserTypes {
@@ -24,7 +23,6 @@ const useLoginUser = () => {
 
       // logowanie użytkownika i łączenie się z sendbird-em
       const { user } = await signInWithEmailAndPassword(auth, email, password);
-      await sb.connect(user.uid, import.meta.env.VITE_APP_TOKEN);
 
       // status w przypadku sukcesu
       setStatus({ isLoading: false, error: null });

@@ -1,6 +1,7 @@
 import ForumIcon from "@mui/icons-material/Forum";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonIcon from "@mui/icons-material/Person";
+import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Link, Typography } from "@mui/material";
 import React from "react";
@@ -28,10 +29,11 @@ const Nav = () => {
       <Content.Actions>
         {user ? (
           <>
+            <Content.Icon icon={<SearchIcon />} onClick={() => navigate("/search")} />
             <Content.Icon icon={<ForumIcon />} />
             <Content.Icon icon={<PersonIcon />} />
             <Content.Icon icon={<SettingsIcon />} />
-            <Content.Icon onClick={async () => await logout()} icon={<LogoutIcon />} />
+            <Content.Icon icon={<LogoutIcon />} onClick={async () => await logout()} />
           </>
         ) : (
           <Link
