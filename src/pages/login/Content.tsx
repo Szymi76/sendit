@@ -1,5 +1,4 @@
-import { styled, TextField, TextFieldProps } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box, styled, TextField, TextFieldProps } from "@mui/material";
 
 // import CanyonImage from "../../assets/canyon.jpg";
 // import MacbookImage from "../../assets/macbook.jpg";
