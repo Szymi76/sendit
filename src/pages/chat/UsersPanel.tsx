@@ -2,7 +2,7 @@ import { collection, CollectionReference, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 
 import { firestore } from "../../firebase";
-import { User } from "../../firebase/collections";
+import { User } from "../../firebase/types";
 import { useChat } from "../../providers/ChatProvider";
 
 const UsersPanel = () => {

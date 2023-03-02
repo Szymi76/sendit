@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useImmer } from "use-immer";
 
 import { firestore } from "../../firebase";
-import { User } from "../../firebase/collections";
+import { User } from "../../firebase/types";
 import { useChat } from "../../providers/ChatProvider";
 import ActiveChat from "./ActiveChat";
 import ChatsList from "./ChatsList";

@@ -1,4 +1,4 @@
-import { Chat, UserObject } from "../../../firebase/collections";
+import { Chat, UserObject } from "../../../firebase/types";
 
 // filtrowanie chatów w liście, których nazwa nawiera podane zapytanie lub któryś z uczesników zawiera podane zapytanie
 export const filterChats = (chats: Map<string, Chat>, query: string, currentUser: UserObject | null) => {

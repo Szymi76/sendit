@@ -2,7 +2,7 @@ import { Autocomplete, Box, TextField } from "@mui/material";
 import { useState } from "react";
 
 import { useChat } from "../../../providers/ChatProvider";
-import { FileInput, Header, Option, PhotoPreview, Wrapper } from "./Content";
+import { Header, Option, PhotoPreview, Wrapper } from "./Content";
 import {
   DataType,
   Errors,
@@ -12,11 +12,14 @@ import {
   validateParticipantsField,
 } from "./utils";
 
-const CreateNewChat = () => {
+type CreateNewChatProps = { toggleVisibility: () => void };
+
+const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
   const [data, setData] = useState<DataType>({ name: "", participants: [], photoURL: null });
   const [errors, setErrors] = useState<Errors>({ name: null, participants: null, active: false });
-  const { friendsList, currentUser, createChat } = useChat();
+  const { friendsList, currentUser, createChat, registerChat } = useChat();
 
+  // tworzy nowy czat jeśli dane się zgadzają
   const handleCreateNewChat = async () => {
     const { name, participants, photoURL } = data;
     setErrors({ ...errors, active: true });
@@ -30,18 +33,22 @@ const CreateNewChat = () => {
     }
 
     const participantsIds = [...participants.map((p) => p.uid), currentUser.val.uid];
-    await createChat(participantsIds, "group", name);
+    const { id } = await createChat(participantsIds, "group", name);
+    registerChat(id);
+    toggleVisibility();
   };
 
-  // @ts-ignore
+  // @ts-ignore (opcje do komponentu Autocomplete)
   const options: OptionItem[] = filterOptionsArray(friendsList);
 
+  // onChange dla uczestników czatu
   const handleParticipantsChange = (e: any, value: OptionItem[]) => {
     setData({ ...data, participants: value });
     const fieldError = validateParticipantsField(value);
     errors.active && setErrors({ ...errors, participants: fieldError });
   };
 
+  // onChange dla nazwy czatu
   const handleNameChange = (value: string) => {
     setData({ ...data, name: value });
     const fieldErrors = validateNameField(value);
@@ -50,7 +57,7 @@ const CreateNewChat = () => {
 
   return (
     <Wrapper>
-      <Header isButtonDisabled={false} handleCreateNewChat={handleCreateNewChat} />
+      <Header handleCreateNewChat={handleCreateNewChat} />
       <Box display="flex" flexDirection="column" gap={2} p={2} maxWidth={550}>
         <Autocomplete
           multiple
@@ -85,8 +92,8 @@ const CreateNewChat = () => {
             name={data.name}
             photoURL={data.photoURL}
             onClear={() => setData({ ...data, photoURL: null })}
+            onChange={(e) => setData({ ...data, photoURL: e.target.files![0] })}
           />
-          <FileInput label="Wybierz zdjęcie" onChange={(e) => setData({ ...data, photoURL: e.target.files![0] })} />
         </Box>
       </Box>
     </Wrapper>

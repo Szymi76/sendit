@@ -1,4 +1,4 @@
-import { UserObject } from "../../../firebase/collections";
+import { UserObject } from "../../../firebase/types";
 
 export type OptionItem = { label: string; uid: string };
 export type Errors = { name: string | null; participants: string | null; active: boolean };

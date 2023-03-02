@@ -4,7 +4,7 @@ import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import { Box, styled, Typography } from "@mui/material";
 import React from "react";
 
-import { User } from "../../firebase/collections";
+import { User } from "../../firebase/types";
 import { useChat } from "../../providers/ChatProvider";
 import * as Content from "./Content";
 

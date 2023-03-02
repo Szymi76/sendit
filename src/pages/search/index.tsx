@@ -2,7 +2,7 @@ import { Autocomplete, Box, TextField } from "@mui/material";
 import { where } from "firebase/firestore";
 import React, { useMemo, useState } from "react";
 
-import { User } from "../../firebase/collections";
+import { User } from "../../firebase/types";
 import useAuth from "../../firebase/hooks/useAuth";
 import useGetDocumentsWithQuery from "../../firebase/hooks/useGetDocuments";
 import UserCard from "./UserCard";

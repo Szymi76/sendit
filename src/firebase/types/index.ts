@@ -1,13 +1,13 @@
-import { collection, CollectionReference, DocumentReference, Timestamp } from "firebase/firestore";
+import { DocumentReference, Timestamp } from "firebase/firestore";
 
-import { firestore } from "..";
+export type Uid = string;
 
 export type User = {
   uid: string;
   displayName: string;
   email: string;
-  friends: string[];
-  photoURL: string;
+  friends: Uid[];
+  photoURL: string | null;
 };
 
 export type UserObject = { ref: DocumentReference<User>; val: User | null };
@@ -22,13 +22,15 @@ export type Message = {
 
 export type Chat = {
   participants: UserObject[];
-  photoURL: string;
+  photoURL: string | null;
   name: string;
   type: ChatType;
   createdAt: Timestamp;
   messages: { ref: DocumentReference<{ messages: Message[] }>; values: Message[] | null };
 };
 
-// export const UsersCollection = collection(firestore, "users") as CollectionReference<User>;
-// export const MessagesCollection = collection(firestore, "users") as CollectionReference<Message>;
-// export const ChatsCollection = collection(firestore, "users") as CollectionReference<Chat>;
+export type ChatPretty = Omit<Chat, "participants" | "messages"> & {
+  participants: User[];
+  messages: Message[];
+  chatId: string;
+};

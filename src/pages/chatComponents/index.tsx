@@ -10,7 +10,7 @@ const ChatV2 = () => {
   return (
     <Box display="flex">
       <ChatsList toggleCreateNewChatVisibility={toggleCreateNewChatVisibility} />
-      {isCreateNewChatVisible && <CreateNewChat />}
+      {isCreateNewChatVisible && <CreateNewChat toggleVisibility={toggleCreateNewChatVisibility} />}
     </Box>
   );
 };

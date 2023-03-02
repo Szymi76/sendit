@@ -1,7 +1,8 @@
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ClearIcon from "@mui/icons-material/Clear";
-import { Avatar, Box, Button, Fab, styled, Typography } from "@mui/material";
+import { Avatar, Box, Button, Fab, IconButton, styled, Typography } from "@mui/material";
 
-import { UserObject } from "../../../firebase/collections";
+import { UserObject } from "../../../firebase/types";
 import { OptionItem } from "./utils";
 
 /* 
@@ -22,9 +23,9 @@ export const Wrapper = styled(Box)(({ theme }) => ({
     Duży napis w lewym górnym roku oraz przycisk do dodawania czatu
 */
 
-export type HeaderProps = { isButtonDisabled: boolean; handleCreateNewChat: () => void };
+export type HeaderProps = { handleCreateNewChat: () => void };
 
-export const Header = ({ isButtonDisabled, handleCreateNewChat }: HeaderProps) => {
+export const Header = ({ handleCreateNewChat }: HeaderProps) => {
   return (
     <Box
       display="flex"
@@ -35,9 +36,9 @@ export const Header = ({ isButtonDisabled, handleCreateNewChat }: HeaderProps) =
       padding={2}
     >
       <Typography variant="h4" fontWeight={500}>
-        Utwórz nowy czat
+        Utwórz nowy czat grupowy
       </Typography>
-      <Button variant="contained" sx={{ px: 4 }} disabled={isButtonDisabled} onClick={handleCreateNewChat}>
+      <Button variant="contained" sx={{ px: 4 }} onClick={handleCreateNewChat}>
         Utwórz
       </Button>
     </Box>
@@ -63,9 +64,14 @@ export const FileInput = ({ label, onChange }: FileInputProps) => {
     Podgląd wybranego zdjęcia i opcja usunięcia go
 */
 
-export type PhotoPreviewProps = { photoURL: File | null; name: string; onClear: () => void };
+export type PhotoPreviewProps = {
+  photoURL: File | null;
+  name: string;
+  onClear: () => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
 
-export const PhotoPreview = ({ photoURL, name, onClear }: PhotoPreviewProps) => {
+export const PhotoPreview = ({ photoURL, name, onClear, onChange }: PhotoPreviewProps) => {
   return (
     <Box position="relative">
       <Avatar
@@ -75,8 +81,15 @@ export const PhotoPreview = ({ photoURL, name, onClear }: PhotoPreviewProps) => 
       >
         {!photoURL && name[0]}
       </Avatar>
-      <Fab size="small" sx={{ position: "absolute", bottom: -10, left: 70 }} onClick={onClear}>
-        <ClearIcon />
+      <Fab size="small" sx={{ position: "absolute", bottom: -10, left: 70 }}>
+        {photoURL ? (
+          <ClearIcon onClick={onClear} />
+        ) : (
+          <IconButton hidden component="label">
+            <AddPhotoAlternateIcon />
+            <input type="file" hidden onChange={onChange} />
+          </IconButton>
+        )}
       </Fab>
     </Box>
   );
@@ -93,11 +106,13 @@ export type OptionProps = {
 };
 
 export const Option = ({ props, option, friendsList }: OptionProps) => {
-  const photoURL = friendsList.get(option.uid)?.val?.photoURL;
+  const user = friendsList.get(option.uid)?.val;
 
   return (
     <li {...props} style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-      <Avatar src={photoURL} alt="Zdjęcie profilowe użytkownika" />
+      <Avatar src={user?.photoURL ? user.photoURL : undefined} alt="Zdjęcie profilowe użytkownika">
+        {!user?.photoURL && user?.displayName}
+      </Avatar>
       <Typography>{option.label}</Typography>
     </li>
   );
