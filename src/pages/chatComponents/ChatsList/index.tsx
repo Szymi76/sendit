@@ -1,7 +1,7 @@
 import HistoryIcon from "@mui/icons-material/History";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 
 import useToggle from "../../../hooks/useToggle";
@@ -9,7 +9,9 @@ import { useChat } from "../../../providers/ChatProvider";
 import { ActionsWrapper, CardsWrapper, ChatCard, Header, HiddenList, SearchInput, Wrapper } from "./Content";
 import { filterChats } from "./utils";
 
-const ChatList = () => {
+type ChatListProps = { toggleCreateNewChatVisibility: () => void };
+
+const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   const { chats, currentUser, friendsList } = useChat();
   const [isListVisible, toggleListVisibility] = useToggle(true);
   const [query, setQuery] = useState("");
@@ -45,7 +47,10 @@ const ChatList = () => {
       ) : (
         // cała lista wraz ze wszystkimi elementami interakcji
         <>
-          <Header toggleListVisibility={toggleListVisibility} />
+          <Header
+            toggleListVisibility={toggleListVisibility}
+            toggleCreateNewChatVisibility={toggleCreateNewChatVisibility}
+          />
           <Box position="relative" px={2}>
             <SearchIcon sx={{ position: "absolute", top: "50%", transform: "translate(50%,-50%)" }} />
             <SearchInput
@@ -58,7 +63,13 @@ const ChatList = () => {
             <HistoryIcon />
             <PeopleOutlineIcon />
           </ActionsWrapper>
-          <CardsWrapper>{chatRoomsList}</CardsWrapper>
+          {chatRoomsList.length == 0 ? (
+            <Typography variant="subtitle1" p={2}>
+              Brak wyników
+            </Typography>
+          ) : (
+            <CardsWrapper>{chatRoomsList}</CardsWrapper>
+          )}
         </>
       )}
     </Wrapper>

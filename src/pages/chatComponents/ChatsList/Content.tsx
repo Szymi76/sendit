@@ -37,14 +37,14 @@ export const Wrapper = styled(Box)(({ theme }) => ({
     Trzy ikony na samej górze
 */
 
-export type HeaderProps = { toggleListVisibility: () => void };
+export type HeaderProps = { toggleListVisibility: () => void; toggleCreateNewChatVisibility: () => void };
 
-export const Header = ({ toggleListVisibility }: HeaderProps) => {
+export const Header = ({ toggleListVisibility, toggleCreateNewChatVisibility }: HeaderProps) => {
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" px={2}>
       <WestIcon sx={iconSx} onClick={toggleListVisibility} />
       <Box display="flex" alignItems="center" gap={1}>
-        <AddCircleIcon sx={iconSx} />
+        <AddCircleIcon sx={iconSx} onClick={toggleCreateNewChatVisibility} />
         <MoreVertIcon sx={iconSx} />
       </Box>
     </Box>
