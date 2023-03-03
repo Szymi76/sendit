@@ -1,46 +1,36 @@
 import HistoryIcon from "@mui/icons-material/History";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, Typography } from "@mui/material";
+import { Box, List, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 
 import useToggle from "../../../hooks/useToggle";
 import { useChat } from "../../../providers/ChatProvider";
-import { ActionsWrapper, CardsWrapper, ChatCard, Header, HiddenList, SearchInput, Wrapper } from "./Content";
+import { ActionsWrapper, Header, HiddenList, SearchInput, SingleListItem, Wrapper } from "./Content";
 import { filterChats } from "./utils";
 
 type ChatListProps = { toggleCreateNewChatVisibility: () => void };
 
 const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
-  const { chats, currentUser, friendsList } = useChat();
+  const {
+    formatted: {
+      chats: [chatsArray],
+      user,
+    },
+    registerChat,
+  } = useChat();
   const [isListVisible, toggleListVisibility] = useToggle(true);
   const [query, setQuery] = useState("");
 
-  // znajomi w postaci tablicy
-  const friendsListAsArray = Array.from(friendsList).map(([id, user]) => user.val?.displayName);
-
   // przefiltrowany chat
-  const filteredChat = useMemo(() => filterChats(chats, query, currentUser), [chats, query]);
-
-  // tablica JSX zawirająca wszystkie pokoje w których uczestniczy aktualny użytkownik
-  const chatRoomsList = Array.from(filteredChat).map(([id, chat]) => {
-    if (!currentUser || !currentUser.val) return <></>;
-
-    const participantsWithoutMe = chat.participants.filter((p) => p.val?.uid != currentUser.val?.uid);
-    const name = chat.type == "individual" ? participantsWithoutMe[0].val?.displayName : chat.name;
-    const photoURL = chat.type == "individual" ? participantsWithoutMe[0].val?.photoURL : chat.photoURL;
-
-    if (!name || !photoURL) return <></>;
-
-    return <ChatCard key={id} name={name} photoURL={photoURL} />;
-  });
+  const filteredChats = useMemo(() => filterChats(chatsArray, query), [chatsArray, query]);
 
   // szerokość wrappera zależna od aktualnej szerokości okna
-  const widthOnLarge = isListVisible ? "25%" : "65px";
-  const widthOnSmall = isListVisible ? "100%" : "65px";
+  const widthOnLarge = isListVisible ? "25%" : "50x";
+  const widthOnSmall = isListVisible ? "100%" : "50px";
 
   return (
-    <Wrapper sx={{ width: { xs: widthOnSmall, md: widthOnLarge } }}>
+    <Wrapper sx={{ width: { xs: widthOnSmall, md: widthOnLarge, minWidth: isListVisible ? "375px" : "0" } }}>
       {/* pokazanie tylko strzałki do pokazania losty */}
       {!isListVisible ? (
         <HiddenList toggleListVisibility={toggleListVisibility} />
@@ -63,12 +53,21 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
             <HistoryIcon />
             <PeopleOutlineIcon />
           </ActionsWrapper>
-          {chatRoomsList.length == 0 ? (
+          {filteredChats.length == 0 ? (
             <Typography variant="subtitle1" p={2}>
               Brak wyników
             </Typography>
           ) : (
-            <CardsWrapper>{chatRoomsList}</CardsWrapper>
+            <List>
+              {filteredChats.map((chat) => (
+                <SingleListItem
+                  key={chat.chatId}
+                  chat={chat}
+                  currentUserUid={user!.uid}
+                  onClick={() => registerChat(chat.chatId)}
+                />
+              ))}
+            </List>
           )}
         </>
       )}

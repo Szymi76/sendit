@@ -29,8 +29,12 @@ export type Chat = {
   messages: { ref: DocumentReference<{ messages: Message[] }>; values: Message[] | null };
 };
 
+export type PrettyMessage = Omit<Message, "author"> & {
+  author: User;
+};
+
 export type ChatPretty = Omit<Chat, "participants" | "messages"> & {
   participants: User[];
-  messages: Message[];
+  messages: PrettyMessage[];
   chatId: string;
 };

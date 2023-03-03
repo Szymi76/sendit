@@ -1,16 +1,13 @@
 import { Chat, UserObject } from "../../../firebase/types";
+import { ChatsArray } from "../../../providers/ChatProvider";
 
 // filtrowanie chatów w liście, których nazwa nawiera podane zapytanie lub któryś z uczesników zawiera podane zapytanie
-export const filterChats = (chats: Map<string, Chat>, query: string, currentUser: UserObject | null) => {
-  if (!currentUser) return new Map<string, Chat>();
+export const filterChats = (chats: ChatsArray, query: string) => {
+  const array = chats.filter((chat) => {
+    const a = chat.name.toLocaleLowerCase().includes(query);
+    const b = chat.participants.some((p) => p.displayName.toLocaleLowerCase().includes(query));
+    return a || b;
+  });
 
-  return new Map(
-    Array.from(chats).filter(([id, chat]) => {
-      const name = chat.name;
-      const participantsNames = chat.participants
-        .map((p) => p.val?.displayName)
-        .filter((n) => n != currentUser?.val?.displayName);
-      return name.includes(query) || participantsNames.some((p) => p && p.includes(query));
-    }),
-  );
+  return array;
 };

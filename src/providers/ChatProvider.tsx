@@ -1,5 +1,6 @@
 import {
   addDoc,
+  arrayUnion,
   collection,
   CollectionReference,
   doc,
@@ -12,13 +13,13 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { createContext, useState } from "react";
+import { createContext, useMemo, useState } from "react";
 import { useCallback, useContext, useEffect } from "react";
 import { useImmer } from "use-immer";
 
 import { firestore } from "../firebase";
 import useAuth from "../firebase/hooks/useAuth";
-import { Chat, ChatPretty, Message, User } from "../firebase/types";
+import { Chat, ChatPretty, Message, PrettyMessage, User } from "../firebase/types";
 import uploadFile from "../firebase/utils/uploadFile";
 
 // const DEFAULT_PHOTO_URL = "https://sendbird.com/main/img/profiles/profile_05_512px.png";
@@ -57,9 +58,9 @@ export type ChatContextType = {
   addFriend: (uid: string) => Promise<void>;
   removeFriend: (uid: string) => Promise<void>;
   formatted: {
-    user: () => User | null;
-    friends: () => User[];
-    chats: () => Readonly<[ChatsArray, ChatsMap]>;
+    user: User | null;
+    friends: User[];
+    chats: Readonly<[ChatsArray, ChatsMap]>;
   };
 };
 
@@ -86,11 +87,11 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [friendsList, setFriendsList] = useImmer(initialFriendsList);
   const users: Map<string, UserObject> = new Map();
 
-  console.log("REGISTERED ID", registeredChatId);
-  console.log("CHATS", chats);
-  console.log("CURRENT USER", currentUser);
-  console.log("FRIENDS LIST", friendsList);
-  console.log("USERS", users);
+  // console.log("REGISTERED ID", registeredChatId);
+  // console.log("CHATS", chats);
+  // console.log("CURRENT USER", currentUser);
+  // console.log("FRIENDS LIST", friendsList);
+  // console.log("USERS", users);
 
   /*
     ------- dodawanie użytkownika do mapy -------
@@ -323,9 +324,9 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
       const chat = chats.get(chatId);
       if (!chat || !chat.messages.values) throw Error("Chat with provided id is not exsists");
 
-      const messages = [...chat.messages.values, newMessage];
+      // const messages = [...chat.messages.values, newMessage];
 
-      await updateDoc(ref, { messages });
+      await updateDoc(ref, { messages: arrayUnion(newMessage) });
     },
     [chats, currentUser],
   );
@@ -388,7 +389,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     /**
      * Zwraca dane aktualnie zalogowanego użytkownika z bazy dancyh
      */
-    user: useCallback(() => {
+    user: useMemo(() => {
       if (!currentUser || !currentUser.val) return null;
       return currentUser.val;
     }, [currentUser]),
@@ -397,7 +398,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
      * Zamienia mapę znajomych na prostą tablice użytkowników
      * @example [firstFriend, secondFriend] as User[];
      */
-    friends: useCallback(() => {
+    friends: useMemo(() => {
       const arrayFromMap = Array.from(friendsList);
       const array = arrayFromMap.map(([uid, userObject]) => {
         const user = userObject.val;
@@ -412,11 +413,18 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
      * Zamienia mapę chatów na ładniejszą wersje gdzie uczestnicy i wiadomości to zwykłe tablice
      * @returns [array, map]
      */
-    chats: useCallback(() => {
+    chats: useMemo(() => {
       const arrayFromMap = Array.from(chats);
       const array: ChatsArray = arrayFromMap.map(([chatId, chat]) => {
-        let messages = chat.messages.values;
-        if (!messages) messages = [];
+        let messagesBefore: Message[] | null = chat.messages.values;
+        if (!messagesBefore) messagesBefore = [];
+
+        // @ts-ignore
+        const messages: PrettyMessage[] = messagesBefore
+          .map((msg) => {
+            return { ...msg, author: msg.author.val };
+          })
+          .filter((msg) => msg.author != null);
 
         // @ts-ignore
         const participants: User[] = chat.participants.map(({ ref, val }) => val).filter((user) => user != null);
@@ -428,6 +436,10 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
       return [array, map] as const;
     }, [chats]),
   };
+
+  console.log("USER:", formatted.user);
+  console.log("FRIENDS:", formatted.friends);
+  console.log("CHATS:", formatted.chats[0]);
 
   /*
     ------- ostateczny objekt kontekstu  -------

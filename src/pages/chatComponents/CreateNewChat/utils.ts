@@ -1,5 +1,3 @@
-import { UserObject } from "../../../firebase/types";
-
 export type OptionItem = { label: string; uid: string };
 export type Errors = { name: string | null; participants: string | null; active: boolean };
 export type DataType = { name: string; participants: OptionItem[]; photoURL: File | null };
@@ -16,16 +14,4 @@ export const validateNameField = (name: string) => {
 export const validateParticipantsField = (participants: OptionItem[]) => {
   if (participants.length < 2) return "Wymaganych jest co najmniej 2 uczestników";
   else return null;
-};
-
-// formatuje mapę na tablice objektów -> {  label: string, uid: string }
-export const formatToOptionsArray = (map: Map<string, UserObject>) => {
-  return Array.from(map).map(([uid, user]) => {
-    return user.val ? { label: user.val.displayName, uid } : null;
-  });
-};
-
-// filtruje tablicę objektów z wartości null (ps. coś się popsuło z typami dla tego czegoś?!)
-export const filterOptionsArray = (map: Map<string, UserObject>) => {
-  return formatToOptionsArray(map).filter((item) => item != null);
 };

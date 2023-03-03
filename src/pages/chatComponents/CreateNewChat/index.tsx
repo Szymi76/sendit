@@ -3,21 +3,19 @@ import { useState } from "react";
 
 import { useChat } from "../../../providers/ChatProvider";
 import { Header, Option, PhotoPreview, Wrapper } from "./Content";
-import {
-  DataType,
-  Errors,
-  filterOptionsArray,
-  OptionItem,
-  validateNameField,
-  validateParticipantsField,
-} from "./utils";
+import { DataType, Errors, OptionItem, validateNameField, validateParticipantsField } from "./utils";
 
 type CreateNewChatProps = { toggleVisibility: () => void };
 
 const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
   const [data, setData] = useState<DataType>({ name: "", participants: [], photoURL: null });
   const [errors, setErrors] = useState<Errors>({ name: null, participants: null, active: false });
-  const { friendsList, currentUser, createChat, registerChat } = useChat();
+  const {
+    friendsList,
+    createChat,
+    registerChat,
+    formatted: { friends, user },
+  } = useChat();
 
   // tworzy nowy czat jeśli dane się zgadzają
   const handleCreateNewChat = async () => {
@@ -27,19 +25,20 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
     // walidacja
     const nameErrors = validateNameField(name);
     const participantsErrors = validateParticipantsField(participants);
-    if (nameErrors || participantsErrors || !currentUser || !currentUser.val) {
+    if (nameErrors || participantsErrors || !user) {
       setErrors({ ...errors, name: nameErrors, participants: participantsErrors });
       return console.warn("Validation failed");
     }
 
-    const participantsIds = [...participants.map((p) => p.uid), currentUser.val.uid];
-    const { id } = await createChat(participantsIds, "group", name);
+    const participantsIds = [...participants.map((p) => p.uid), user.uid];
+    const { id } = await createChat(participantsIds, "group", name, photoURL!);
     registerChat(id);
     toggleVisibility();
   };
 
-  // @ts-ignore (opcje do komponentu Autocomplete)
-  const options: OptionItem[] = filterOptionsArray(friendsList);
+  const options: OptionItem[] = friends.map(({ uid, displayName }) => {
+    return { label: displayName, uid };
+  });
 
   // onChange dla uczestników czatu
   const handleParticipantsChange = (e: any, value: OptionItem[]) => {
@@ -58,7 +57,7 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
   return (
     <Wrapper>
       <Header handleCreateNewChat={handleCreateNewChat} />
-      <Box display="flex" flexDirection="column" gap={2} p={2} maxWidth={550}>
+      <Box display="flex" flexDirection="column" gap={2} p={3} maxWidth={550}>
         <Autocomplete
           multiple
           options={options}

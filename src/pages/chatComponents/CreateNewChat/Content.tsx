@@ -1,10 +1,10 @@
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ClearIcon from "@mui/icons-material/Clear";
+import TryIcon from "@mui/icons-material/Try";
 import { Avatar, Box, Button, Fab, IconButton, styled, Typography } from "@mui/material";
 
 import { UserObject } from "../../../firebase/types";
 import { OptionItem } from "./utils";
-
 /* 
     Jasno szary kontener dla całego komponentu dodawania nowego czatu
 */
@@ -14,7 +14,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
   flexDirection: "column",
   gap: theme.spacing(1),
   backgroundColor: theme.palette.grey[100],
-  width: "60%",
+  width: "100%",
   borderRight: "1px solid",
   borderColor: theme.palette.grey[300],
 }));
@@ -35,12 +35,12 @@ export const Header = ({ handleCreateNewChat }: HeaderProps) => {
       sx={{ borderColor: (theme) => theme.palette.grey[300] }}
       padding={2}
     >
-      <Typography variant="h4" fontWeight={500}>
+      <Typography variant="h4" maxWidth="70%" fontWeight={500}>
         Utwórz nowy czat grupowy
       </Typography>
-      <Button variant="contained" sx={{ px: 4 }} onClick={handleCreateNewChat}>
-        Utwórz
-      </Button>
+      <Fab color="primary" onClick={handleCreateNewChat}>
+        <TryIcon />
+      </Fab>
     </Box>
   );
 };
@@ -81,7 +81,7 @@ export const PhotoPreview = ({ photoURL, name, onClear, onChange }: PhotoPreview
       >
         {!photoURL && name[0]}
       </Avatar>
-      <Fab size="small" sx={{ position: "absolute", bottom: -10, left: 70 }}>
+      <Fab size="small" sx={{ position: "absolute", bottom: -10, left: 70, zIndex: 10 }}>
         {photoURL ? (
           <ClearIcon onClick={onClear} />
         ) : (

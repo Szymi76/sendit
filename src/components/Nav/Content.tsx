@@ -8,7 +8,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
   position: "fixed",
   top: 0,
   zIndex: 30,
-  backgroundColor: "rgba(79, 70, 229, .9)",
+  backgroundColor: theme.palette.primary.main,
   backdropFilter: "blur(5px)",
   padding: "0 16px",
   display: "flex",

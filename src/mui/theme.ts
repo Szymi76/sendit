@@ -1,5 +1,11 @@
 import { createTheme } from "@mui/material";
 
+declare module "@mui/material/Fab" {
+  interface FabPropsVariantOverrides {
+    transparent: true;
+  }
+}
+
 const theme = createTheme({
   typography: {
     fontFamily: "'Noto Sans', sans-serif",
@@ -37,6 +43,21 @@ const theme = createTheme({
           },
         }),
       },
+    },
+    MuiFab: {
+      variants: [
+        {
+          props: { variant: "transparent" },
+          style: {
+            backgroundColor: "transparent",
+            boxShadow: "none",
+            ":hover": {
+              backgroundColor: "transparent",
+              backdropFilter: "brightness(90%)",
+            },
+          },
+        },
+      ],
     },
   },
 });
