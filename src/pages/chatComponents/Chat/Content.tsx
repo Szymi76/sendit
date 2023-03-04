@@ -1,5 +1,6 @@
+import CloseIcon from "@mui/icons-material/Close";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Fab, styled, Typography } from "@mui/material";
+import { Box, ClickAwayListener, Fab, Grid, styled, Typography } from "@mui/material";
 
 import { UserAvatar } from "../../../components/components";
 import { ChatPretty, PrettyMessage, User } from "../../../firebase/types";
@@ -90,6 +91,8 @@ export const MessageBox = ({ message, currentUser }: MessageBoxProps) => {
             {message.author.displayName}
           </Typography>
           <Typography
+            display="flex"
+            flexDirection="column"
             variant="body1"
             sx={{
               color: (theme) => {
@@ -97,6 +100,22 @@ export const MessageBox = ({ message, currentUser }: MessageBoxProps) => {
               },
             }}
           >
+            {message.files.length > 0 && (
+              <Box display="flex" flexWrap="wrap" gap={2} mb={1}>
+                {message.files.map((file, index) => {
+                  return (
+                    <img
+                      key={index}
+                      src={file as string}
+                      height={125}
+                      width={125}
+                      style={{ borderRadius: 5, objectFit: "cover" }}
+                      alt="Zdjęcie"
+                    />
+                  );
+                })}
+              </Box>
+            )}
             {message.text}
           </Typography>
         </Box>
@@ -127,3 +146,54 @@ export const InputWrapper = styled(Box)(({ theme }) => ({
   alignItems: "center",
   backgroundColor: theme.palette.grey[200],
 }));
+
+export type EmojiWrapperProps = { children: React.ReactNode; toggleEmojisVisibility: (to?: unknown) => void };
+
+export const EmojiWrapper = ({ children, toggleEmojisVisibility }: EmojiWrapperProps) => {
+  return (
+    <ClickAwayListener onClickAway={toggleEmojisVisibility}>
+      <Box width={{ xs: "250px", sm: "350px" }} position="absolute" top="-475px" right={{ xs: "0px", md: "125px" }}>
+        {children}
+      </Box>
+    </ClickAwayListener>
+  );
+};
+
+export const FilesPreviewWrapper = styled(Grid)(({ theme }) => ({
+  position: "absolute",
+  left: "40px",
+  top: "-258px",
+  height: "250px",
+  maxWidth: "250px",
+  width: "90%",
+  borderRadius: 5,
+  backgroundColor: theme.palette.grey[300],
+  padding: theme.spacing(2),
+}));
+
+export type FileItemProps = { file: File; single: boolean; onRemove: () => void };
+
+export const FileItem = ({ file, single, onRemove }: FileItemProps) => {
+  console.log(file);
+  const src = URL.createObjectURL(file);
+
+  return (
+    <Grid position="relative" xs={single ? 12 : 6} display="flex" justifyContent="center" alignItems="center">
+      <Box position="absolute" height="100%" width="100%" sx={{ opacity: "0", ":hover": { opacity: "1" } }}>
+        <CloseIcon
+          onClick={onRemove}
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            cursor: "pointer",
+            bgcolor: "rgba(255,255,255,.35)",
+            borderRadius: 9999,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        />
+      </Box>
+      <img src={src} width="90%" height="90%" alt="Wybrane zdjęcie" style={{ borderRadius: 5, objectFit: "cover" }} />
+    </Grid>
+  );
+};

@@ -9,7 +9,7 @@ import { useChat } from "../../../providers/ChatProvider";
 import { ActionsWrapper, Header, HiddenList, SearchInput, SingleListItem, Wrapper } from "./Content";
 import { filterChats } from "./utils";
 
-type ChatListProps = { toggleCreateNewChatVisibility: () => void };
+type ChatListProps = { toggleCreateNewChatVisibility: (to: unknown) => void };
 
 const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   const {
@@ -24,6 +24,11 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
 
   // przefiltrowany chat
   const filteredChats = useMemo(() => filterChats(chatsArray, query), [chatsArray, query]);
+
+  const handleListItemClick = async (id: string) => {
+    await registerChat(id);
+    toggleCreateNewChatVisibility(false);
+  };
 
   // szerokość wrappera zależna od aktualnej szerokości okna
   const widthOnLarge = isListVisible ? "25%" : "50x";
@@ -58,13 +63,13 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
               Brak wyników
             </Typography>
           ) : (
-            <List>
+            <List sx={{ overflow: "auto" }}>
               {filteredChats.map((chat) => (
                 <SingleListItem
                   key={chat.chatId}
                   chat={chat}
                   currentUserUid={user!.uid}
-                  onClick={() => registerChat(chat.chatId)}
+                  onClick={() => handleListItemClick(chat.chatId)}
                 />
               ))}
             </List>

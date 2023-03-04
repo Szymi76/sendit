@@ -2,6 +2,7 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ClearIcon from "@mui/icons-material/Clear";
 import TryIcon from "@mui/icons-material/Try";
 import { Avatar, Box, Button, Fab, IconButton, styled, Typography } from "@mui/material";
+import { RotatingLines } from "react-loader-spinner";
 
 import { UserObject } from "../../../firebase/types";
 import { OptionItem } from "./utils";
@@ -115,5 +116,21 @@ export const Option = ({ props, option, friendsList }: OptionProps) => {
       </Avatar>
       <Typography>{option.label}</Typography>
     </li>
+  );
+};
+
+export const Loading = () => {
+  return (
+    <Box
+      position="fixed"
+      width="100%"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      sx={{ height: "calc(100vh - 44px)", bgcolor: "rgba(0,0,0,0.2)" }}
+      zIndex={2000}
+    >
+      <RotatingLines strokeColor="white" />
+    </Box>
   );
 };

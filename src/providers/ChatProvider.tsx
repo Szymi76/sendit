@@ -1,5 +1,7 @@
+import { uuidv4 } from "@firebase/util";
 import {
   addDoc,
+  arrayRemove,
   arrayUnion,
   collection,
   CollectionReference,
@@ -32,13 +34,32 @@ import uploadFile from "../firebase/utils/uploadFile";
 
 export type ChatId = string;
 export type Uid = string;
-export type Value = { text: string; files?: string[] | Blob[] };
+export type Value = { text: string; files?: string[] | File[] };
 export type CreateChatReturn = { chatId: string; chat: Chat } | null;
 export type UserObject = { ref: DocumentReference<User>; val: User | null };
 export type ChatType = "individual" | "group";
 
 export type ChatsArray = ChatPretty[];
 export type ChatsMap = Map<ChatId, ChatPretty>;
+
+export type Status = {
+  creatingChat: {
+    isLoading: boolean;
+    isError: boolean;
+  };
+  sendingMessage: {
+    isLoading: boolean;
+    isError: boolean;
+  };
+  fetchingChats: {
+    isLoading: boolean;
+    isError: boolean;
+  };
+  fetchingRegisteredChat: {
+    isLoading: boolean;
+    isError: boolean;
+  };
+};
 
 export type ChatProviderProps = { children: React.ReactNode };
 
@@ -47,13 +68,14 @@ export type ChatContextType = {
   chats: Map<ChatId, Chat>;
   friendsList: Map<Uid, UserObject>;
   registeredChatId: string | null;
+  status: Status;
   registerChat: (chatId: ChatId) => Promise<void>;
   createChat: (
     participantsUids: string[],
     type: ChatType,
     name: string,
     photoURL?: File | string,
-  ) => Promise<{ id: ChatId }>;
+  ) => Promise<{ id: ChatId } | null>;
   sendMessage: (chatId: ChatId, value: Value) => Promise<void>;
   addFriend: (uid: string) => Promise<void>;
   removeFriend: (uid: string) => Promise<void>;
@@ -72,6 +94,24 @@ const ErrorMessage = "Hook is not ready, probably there is not user logged in.";
 const initialChatsValue = new Map<ChatId, Chat>();
 const initialCurrentUser = null;
 const initialFriendsList: Map<Uid, UserObject> = new Map<Uid, UserObject>();
+const initialStatus: Status = {
+  creatingChat: {
+    isLoading: false,
+    isError: false,
+  },
+  sendingMessage: {
+    isLoading: false,
+    isError: false,
+  },
+  fetchingChats: {
+    isLoading: false,
+    isError: false,
+  },
+  fetchingRegisteredChat: {
+    isLoading: false,
+    isError: false,
+  },
+};
 
 /*
     ----------------------------
@@ -85,304 +125,22 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [chats, setChats] = useImmer(initialChatsValue);
   const [currentUser, setCurrentUser] = useImmer<UserObject | null>(initialCurrentUser);
   const [friendsList, setFriendsList] = useImmer(initialFriendsList);
-  const users: Map<string, UserObject> = new Map();
-
-  // console.log("REGISTERED ID", registeredChatId);
-  // console.log("CHATS", chats);
-  // console.log("CURRENT USER", currentUser);
-  // console.log("FRIENDS LIST", friendsList);
-  // console.log("USERS", users);
+  const [chatIdInQueue, setChatIdInQueue] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>(initialStatus);
+  const users = useMemo(() => new Map<string, UserObject>(), []);
 
   /*
-    ------- dodawanie użytkownika do mapy -------
+    ------- funkcja do aktualizacji stanu ładowania lub błędu  -------
   */
 
-  const addUserToArray = useCallback(({ ref, val }: UserObject) => {
-    if (val) users.set(val.uid, { ref, val });
-  }, []);
-
-  /*
-    ------- pobieranie użytkownika z bazy lub tablicy za pomocą uid -------
-  */
-
-  const getUserFromArrayOrFirebaseWithUid = useCallback(async (uid: string) => {
-    const userObject = users.get(uid);
-    if (userObject && userObject.val) return userObject.val;
-
-    const ref = doc(firestore, "users", uid) as DocumentReference<User>;
-    const fetchedUser = await (await getDoc(ref)).data();
-
-    return fetchedUser ? fetchedUser : null;
-  }, []);
-
-  /*
-    ------- pobieranie użytkownika z bazy lub tablicy za pomocą referencji -------
-  */
-
-  const getUserFromArrayOrFirebaseWithRef = useCallback(async (ref: DocumentReference<User>) => {
-    const array = Array.from(users).map(([uid, value]) => value);
-    // @ts-ignore
-    const index = array.indexOf({ ref });
-    if (index > -1 && array[index].val) return array[index].val;
-
-    const fetchedUser = await (await getDoc(ref)).data();
-    return fetchedUser ? fetchedUser : null;
-  }, []);
-
-  /*
-    ------- pobieranie aktualnego użytkownika z bazy danych w czasie rzeczywistym -------
-  */
-
-  useEffect(() => {
-    if (!user || isLoading) return;
-
-    const ref = doc(firestore, "users", user.uid) as DocumentReference<User>;
-    const unsubcribe = onSnapshot(ref, (doc) => {
-      const fetchedUser = doc.data();
-      if (fetchedUser) {
-        setCurrentUser({ ref: doc.ref, val: fetchedUser });
-        addUserToArray({ ref: doc.ref, val: fetchedUser });
-      }
+  const updateStatus = (statusToUpdate: Partial<Status>) => {
+    setStatus((status) => {
+      return { ...status, ...statusToUpdate };
     });
-
-    return unsubcribe;
-  }, [firestore, user]);
+  };
 
   /*
-    ------- pobieranie listy znajomych w czasie rzeczywistym -------
-  */
-
-  useEffect(() => {
-    if (!currentUser || !currentUser.val || isLoading) return;
-
-    currentUser.val.friends.forEach(async (uid) => {
-      const ref = doc(firestore, "users", uid) as DocumentReference<User>;
-      const friend = await getUserFromArrayOrFirebaseWithUid(uid);
-
-      if (friend) {
-        setFriendsList((draft) => {
-          draft.set(uid, { ref, val: friend });
-        });
-      }
-    });
-  }, [firestore, currentUser]);
-
-  /*
-    ------- pobieranie wiadomości zarejestrowanego czatu w czasie rzeczywistym -------
-  */
-
-  useEffect(() => {
-    if (!currentUser || !currentUser.val || isLoading) return;
-
-    if (!registeredChatId) return;
-
-    const ref = doc(firestore, "messages", registeredChatId) as DocumentReference<{ messages: Message[] }>;
-    const unsubcribe = onSnapshot(ref, async (snapshot) => {
-      const chat = chats.get(registeredChatId);
-      const document = snapshot.data();
-      if (!document || !chat) return;
-
-      // pobrane wiadomości bez autorów, czyli { ref: <some ref>, val: null }
-      const { messages: values } = document;
-      const messages = { ref, values };
-
-      // podmienianie wartości autorów które są null na konkretnego użytkownika za pomocą ref-a
-      for (let i = 0; i < messages.values.length; i++) {
-        const author = messages.values[i].author;
-        const userToParse = await getUserFromArrayOrFirebaseWithRef(author.ref);
-        messages.values[i].author.val = userToParse;
-      }
-
-      setChats((draft) => {
-        draft.set(registeredChatId, { ...chat, messages });
-      });
-    });
-
-    return unsubcribe;
-  }, [firestore, user, registeredChatId]);
-
-  /*
-    ------- pobieranie wszystkich czatów bez wiadomości w czasie rzeczywistym -------
-  */
-
-  useEffect(() => {
-    if (!user || !currentUser || isLoading) return;
-
-    const ref = collection(firestore, "chats") as CollectionReference<Chat>;
-    const q = query(ref, where("participants", "array-contains", { ref: currentUser.ref, val: null }));
-    const unsubcribe = onSnapshot(q, (snapshot) => {
-      snapshot.forEach(async (doc) => {
-        const chat = doc.data();
-
-        // podmiana uczestników z wartości null na objekt użytkownika
-        for (let i = 0; i < chat.participants.length; i++) {
-          const ref = chat.participants[i].ref;
-          const userToParse = await getUserFromArrayOrFirebaseWithRef(ref);
-          chat.participants[i].val = userToParse;
-        }
-
-        // ustawianie czatu do mapy, jeśli już istnieje to nie aktualizuje wiadomości
-        setChats((draft) => {
-          const existingChat = draft.get(doc.id);
-          if (!existingChat) draft.set(doc.id, chat);
-          else draft.set(doc.id, { ...chat, messages: existingChat.messages });
-        });
-      });
-    });
-
-    return unsubcribe;
-  }, [firestore, currentUser, registeredChatId]);
-
-  /*
-    ------- pobieranie wiadomości do konkretnego czatu  -------
-  */
-
-  const registerChat = useCallback(
-    async (chatId: ChatId) => {
-      const chat = chats.get(chatId);
-      if (!chat) throw new Error("Can't register not exsisting chat");
-
-      const ref = doc(firestore, "messages", chatId) as DocumentReference<{ messages: Message[] }>;
-      const document = await (await getDoc(ref)).data();
-      if (!document) throw new Error("Chat with provided id does not exists");
-
-      const { messages } = document;
-
-      setChats((draft) => {
-        draft.set(chatId, { ...chat, messages: { ref, values: messages } });
-      });
-
-      setRegisteredChatId(chatId);
-    },
-    [chats],
-  );
-
-  /*
-    ------- dodawanie znajomego w czasie rzeczywistym  -------
-  */
-
-  const addFriend = useCallback(
-    async (otherUserUid: string) => {
-      if (!user || !currentUser || !currentUser.val || isLoading) return;
-
-      const currentUserRef = doc(firestore, "users", currentUser.val.uid) as DocumentReference<User>;
-      const otherUserRef = doc(firestore, "users", otherUserUid) as DocumentReference<User>;
-
-      const otherUser = await (await getDoc(otherUserRef)).data();
-      if (!otherUser) throw new Error("Adding user to friend list failed, user does not exsists");
-
-      const newCurrentUserFriendsList = Array.from(new Set([...currentUser.val.friends, otherUserUid]));
-      const newOtherUserFriendsList = Array.from(new Set([...otherUser.friends, currentUser.val.uid]));
-
-      await updateDoc(currentUserRef, { friends: newCurrentUserFriendsList });
-      await updateDoc(otherUserRef, { friends: newOtherUserFriendsList });
-    },
-    [currentUser],
-  );
-
-  /*
-    ------- usuwanie znajomego w czasie rzeczywistym  -------
-  */
-
-  const removeFriend = useCallback(
-    async (otherUserUid: string) => {
-      if (!user || !currentUser || !currentUser.val || isLoading) return;
-
-      const currentUserRef = doc(firestore, "users", currentUser.val.uid) as DocumentReference<User>;
-      const otherUserRef = doc(firestore, "users", otherUserUid) as DocumentReference<User>;
-
-      const otherUser = await (await getDoc(otherUserRef)).data();
-      if (!otherUser) throw new Error("Removing user from friend list failed, user does not exsists");
-
-      const newCurrentUserFriendsList = currentUser.val.friends.filter((uid) => uid != otherUserUid);
-      const newOtherUserFriendsList = otherUser.friends.filter((uid) => uid != currentUser.val?.uid);
-
-      await updateDoc(currentUserRef, { friends: newCurrentUserFriendsList });
-      await updateDoc(otherUserRef, { friends: newOtherUserFriendsList });
-    },
-    [currentUser],
-  );
-
-  /*
-    ------- wysyłanie wiadomości w czasie rzeczywistym  -------
-  */
-
-  const sendMessage = useCallback(
-    async (chatId: ChatId, value: Value) => {
-      if (!user || !currentUser || !currentUser.val || isLoading) throw Error(ErrorMessage);
-
-      const ref = doc(firestore, "messages", chatId) as DocumentReference<{ messages: Message[] }>;
-      const authorRef = doc(firestore, "users", currentUser.val.uid) as DocumentReference<User>;
-
-      const newMessage: Message = {
-        author: { ref: authorRef, val: null },
-        text: value.text,
-        files: value.files ?? [],
-        createdAt: new Timestamp(+new Date() / 1000, 1000),
-      };
-
-      const chat = chats.get(chatId);
-      if (!chat || !chat.messages.values) throw Error("Chat with provided id is not exsists");
-
-      // const messages = [...chat.messages.values, newMessage];
-
-      await updateDoc(ref, { messages: arrayUnion(newMessage) });
-    },
-    [chats, currentUser],
-  );
-
-  /*
-    ------- tworzenie chatu(pokoju) w czasie rzeczywistym  -------
-  */
-
-  const createChat = useCallback(
-    async (participantsUids: string[], type: ChatType, name: string, photoURL?: File | string) => {
-      if (!user || !currentUser || !currentUser.val || isLoading) throw Error(ErrorMessage);
-
-      const participants: UserObject[] = [];
-      participantsUids.forEach((uid) => {
-        const ref = doc(firestore, "users", uid) as DocumentReference<User>;
-        participants.push({ ref, val: null });
-      });
-
-      const tempRef = doc(firestore, "messages", "_temp") as DocumentReference<{ messages: Message[] }>;
-
-      const newChat = {
-        participants,
-        type,
-        messages: { ref: tempRef, values: [] },
-        name,
-        photoURL: null,
-        createdAt: new Timestamp(+new Date() / 1000, 1000),
-      };
-
-      const ref = collection(firestore, "chats") as CollectionReference<Chat>;
-      const { id } = await addDoc(ref, newChat);
-
-      const messagesRef = doc(firestore, "messages", id) as DocumentReference<{ messages: Message[] }>;
-      const chatRef = doc(firestore, "chats", id) as DocumentReference<Chat>;
-
-      if (photoURL && typeof photoURL != "string") {
-        const arrayBuffer = await photoURL.arrayBuffer();
-        const url = await uploadFile(arrayBuffer, "chats/main", id);
-        photoURL = url;
-      }
-
-      await updateDoc(chatRef, {
-        photoURL: typeof photoURL == "string" ? photoURL : null,
-        messages: { ref: messagesRef, values: [] },
-      });
-
-      await setDoc(messagesRef, { messages: [] });
-
-      setRegisteredChatId(id);
-      return { id };
-    },
-    [currentUser],
-  );
-
-  /*
-    ------- objekt z funkcjami do formatowania danych do ładniejszej formy  -------
+    ------- objekt z formatowanymi danymi  -------
   */
 
   const formatted = {
@@ -437,9 +195,469 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     }, [chats]),
   };
 
+  /*
+    ------- funkcje pomocniecze służące do podmiany wartości w objektach, które przyszły z bazy danych  -------
+  */
+
+  const helpers = {
+    /**
+     * Zamienia użytkownika w postaci UserObject na zwykłego użytkownika
+     */
+    expandUserObject: useCallback(async (userObject: UserObject) => {
+      const { ref } = userObject;
+      const userFromRef = await getUserFromArrayOrFirebaseWithRef(ref);
+      return { ...userObject, val: userFromRef };
+    }, []),
+
+    /**
+     * Podmienia autorów dla każdej wiadomości z tablicy
+     */
+    expandMessagesArray: useCallback(async (messages: Message[]) => {
+      const expandedMessages: Message[] = [];
+      for (let i = 0; i < messages.length; i++) {
+        const author = messages[i].author;
+        const expandedAuthor = await helpers.expandUserObject(author);
+        expandedMessages.push({ ...messages[i], author: expandedAuthor });
+      }
+      return expandedMessages;
+    }, []),
+
+    /**
+     * Podmienia wymagane pola w czacie (wiadomości i uczestnicy)
+     */
+    expandSingleChat: useCallback(async (chat: Chat, expand: { messages: boolean; participants: boolean }) => {
+      const participants = chat.participants;
+      const expandedParticipants: UserObject[] = [];
+
+      // rozszerzanie uczestników
+      if (expand.participants) {
+        for (let i = 0; i < participants.length; i++) {
+          const parti = participants[i];
+          const expandedParti = await helpers.expandUserObject(parti);
+          expandedParticipants.push(expandedParti);
+        }
+      }
+
+      const messages = chat.messages.values;
+      let expandedMessages: Message[] = [];
+
+      // rozszerzanie wiadomości
+      if (expand.messages && messages) {
+        expandedMessages = await helpers.expandMessagesArray(messages);
+      }
+
+      return {
+        ...chat,
+        messages: expand.messages ? { ...chat.messages, values: expandedMessages } : { ...chat.messages },
+        participants: expand.participants ? expandedParticipants : participants,
+      };
+    }, []),
+  };
+
+  /*
+    ------- dodawanie użytkownika do mapy -------
+  */
+
+  const addUserToArray = useCallback(({ ref, val }: UserObject) => {
+    if (val) users.set(val.uid, { ref, val });
+  }, []);
+
+  /*
+    ------- pobieranie użytkownika z bazy lub tablicy za pomocą uid -------
+  */
+
+  const getUserFromArrayOrFirebaseWithUid = useCallback(async (uid: string) => {
+    const userObject = users.get(uid);
+    if (userObject && userObject.val) return userObject.val;
+
+    const ref = doc(firestore, "users", uid) as DocumentReference<User>;
+    const fetchedUser = await (await getDoc(ref)).data();
+
+    addUserToArray({ ref, val: fetchedUser ? fetchedUser : null });
+
+    return fetchedUser ? fetchedUser : null;
+  }, []);
+
+  /*
+    ------- pobieranie użytkownika z bazy lub tablicy za pomocą referencji -------
+  */
+
+  const getUserFromArrayOrFirebaseWithRef = useCallback(async (ref: DocumentReference<User>) => {
+    const array = Array.from(users).map(([uid, value]) => value);
+    // @ts-ignore
+    const index = array.indexOf({ ref });
+    if (index > -1 && array[index].val) return array[index].val;
+
+    const fetchedUser = await (await getDoc(ref)).data();
+
+    addUserToArray({ ref, val: fetchedUser ? fetchedUser : null });
+
+    return fetchedUser ? fetchedUser : null;
+  }, []);
+
+  /*
+    ------- pobieranie aktualnego użytkownika z bazy danych w czasie rzeczywistym -------
+  */
+
+  useEffect(() => {
+    if (!user || isLoading) return;
+
+    // referencja do aktualnie zalogowanego użytkownika
+    const ref = doc(firestore, "users", user.uid) as DocumentReference<User>;
+
+    // nasłuchiwanie na zmiany w dokumencie użytkownika
+    const unsubcribe = onSnapshot(ref, (doc) => {
+      const fetchedUser = doc.data();
+      if (fetchedUser) {
+        setCurrentUser({ ref: doc.ref, val: fetchedUser });
+        addUserToArray({ ref: doc.ref, val: fetchedUser });
+      }
+    });
+
+    return unsubcribe;
+  }, [firestore, user]);
+
+  /*
+    ------- pobieranie listy znajomych w czasie rzeczywistym -------
+  */
+
+  useEffect(() => {
+    if (!currentUser || !currentUser.val || isLoading) return;
+
+    const fetchFriends = async () => {
+      const fetchedFriendsArray = new Map<string, UserObject>();
+      const friendsUids = currentUser.val!.friends;
+
+      // iterowanie przez uid znajomych i poberanie dla każdego danych z bazy danych
+      for (let i = 0; i < friendsUids.length; i++) {
+        const uid = friendsUids[i];
+        const ref = doc(firestore, "users", uid) as DocumentReference<User>;
+        const friend = await getUserFromArrayOrFirebaseWithUid(uid);
+        if (friend) {
+          fetchedFriendsArray.set(uid, { ref, val: friend });
+        }
+      }
+      return fetchedFriendsArray;
+    };
+
+    // pobieranie listy znajomych
+    fetchFriends()
+      .then((friendsList) => {
+        setFriendsList(friendsList);
+      })
+      .catch((err) => {
+        console.warn(err);
+      });
+  }, [firestore, currentUser]);
+
+  /*
+    ------- pobieranie wiadomości zarejestrowanego czatu w czasie rzeczywistym -------
+  */
+
+  useEffect(() => {
+    if (!currentUser || !currentUser.val || isLoading) return;
+
+    // nie pobieranie wiadomości, jeśli nie ma żadnego zarejestrowanego czatu
+    if (!registeredChatId) return;
+
+    try {
+      // referencja do wiadomości zarejestrowanego czatu
+      const ref = doc(firestore, "messages", registeredChatId) as DocumentReference<{ messages: Message[] }>;
+
+      // nasłychiwanie na wiadomości w zarejestrowanym czcie
+      const unsubcribe = onSnapshot(ref, async (snapshot) => {
+        const chat = chats.get(registeredChatId);
+        const document = snapshot.data();
+
+        if (!document || !chat) {
+          updateStatus({ fetchingRegisteredChat: { isLoading: false, isError: true } });
+          return console.warn("Registered chat does not exist, probably chats has not been able to fetch");
+        }
+
+        // podmienianie wymaganych wartości w tablicy wiadomości
+        const messagesArray = document.messages;
+        const values = await helpers.expandMessagesArray(messagesArray);
+        const messages = { ref, values };
+
+        setChats((draft) => {
+          draft.set(registeredChatId, { ...chat, messages });
+        });
+      });
+
+      // informacja o udanym pobraniu wiadomości
+      updateStatus({ fetchingRegisteredChat: { isLoading: false, isError: false } });
+
+      return unsubcribe;
+    } catch (err) {
+      console.warn(err);
+      updateStatus({ fetchingRegisteredChat: { isLoading: false, isError: true } });
+    }
+  }, [firestore, user, registeredChatId]);
+
+  /*
+    ------- pobieranie wszystkich czatów bez wiadomości w czasie rzeczywistym -------
+  */
+
+  useEffect(() => {
+    if (!user || !currentUser || isLoading) return;
+
+    try {
+      // referencja do kolekji czatów
+      const ref = collection(firestore, "chats") as CollectionReference<Chat>;
+      const q = query(ref, where("participants", "array-contains", { ref: currentUser.ref, val: null }));
+
+      // nasłuchiwanie na zmiany czatach
+      const unsubcribe = onSnapshot(q, async (snapshot) => {
+        // informacja o rozpoczęciu poberaniu czatów
+        updateStatus({ fetchingChats: { isLoading: true, isError: false } });
+
+        // ostateczna mapa z pobranymi czatami
+        const fetchedChats = new Map<string, Chat>();
+
+        // pętla podmieniająca dane w każdym czacie
+        for (let i = 0; i < snapshot.docs.length; i++) {
+          const chatId = snapshot.docs[i].id;
+          const chat = snapshot.docs[i].data();
+          const expandedChat = await helpers.expandSingleChat(chat, { messages: false, participants: true });
+
+          fetchedChats.set(chatId, expandedChat);
+        }
+
+        setChats(fetchedChats);
+
+        // informacja o udanym pobraniu czatów
+        updateStatus({ fetchingChats: { isLoading: false, isError: false } });
+      });
+
+      return unsubcribe;
+    } catch (err) {
+      console.warn(err);
+      updateStatus({ fetchingChats: { isLoading: false, isError: true } });
+    }
+  }, [firestore, currentUser]);
+
+  /*
+    ------- Czekanie na zakolejkowany czat -------
+  */
+
+  useEffect(() => {
+    if (!chatIdInQueue) return;
+
+    try {
+      const chat = chats.get(chatIdInQueue);
+      if (!chat) return;
+      console.warn("Queued chat is not exists");
+
+      // jeśli znalazł się czat z kolejki, to ustawianie zarejestrowanego czatu na ten z kolejki
+      setRegisteredChatId(chatIdInQueue);
+      setChatIdInQueue(null);
+    } catch (err) {
+      console.warn(err);
+    }
+  }, [chats, chatIdInQueue]);
+
+  /*
+    ------- rejestrowanie czatu  -------
+  */
+
+  const registerChat = useCallback(
+    async (chatId: ChatId) => {
+      try {
+        const chat = chats.get(chatId);
+        if (!chat) throw new Error("Can't register not exsisting chat");
+      } catch (err) {
+        console.warn(err);
+      }
+
+      setRegisteredChatId(chatId);
+    },
+    [chats],
+  );
+
+  /*
+    ------- dodawanie znajomego w czasie rzeczywistym  -------
+  */
+
+  const addFriend = useCallback(
+    async (otherUserUid: string) => {
+      if (!user || !currentUser || !currentUser.val || isLoading) throw Error(ErrorMessage);
+
+      try {
+        // referecja do aktualnie zalogowanego użytkownika i drugiego, którego chcemy usunąć ze znajomych
+        const currentUserRef = currentUser.ref;
+        const otherUserRef = doc(firestore, "users", otherUserUid) as DocumentReference<User>;
+
+        // poberanie informacji o drugim użytkowniku
+        const otherUser = await (await getDoc(otherUserRef)).data();
+        if (!otherUser) return console.warn("Can't add to friends not existing user");
+
+        // dodawanie przeciwnych uid
+        await updateDoc(currentUserRef, { friends: arrayUnion(otherUser.uid) });
+        await updateDoc(otherUserRef, { friends: arrayUnion(currentUser.val.uid) });
+      } catch (err) {
+        console.warn(err);
+      }
+    },
+    [currentUser],
+  );
+
+  /*
+    ------- usuwanie znajomego w czasie rzeczywistym  -------
+  */
+
+  const removeFriend = useCallback(
+    async (otherUserUid: string) => {
+      if (!user || !currentUser || !currentUser.val || isLoading) throw Error(ErrorMessage);
+
+      try {
+        // referecja do aktualnie zalogowanego użytkownika i drugiego, którego chcemy usunąć ze znajomych
+        const currentUserRef = currentUser.ref;
+        const otherUserRef = doc(firestore, "users", otherUserUid) as DocumentReference<User>;
+
+        // poberanie informacji o drugim użytkowniku
+        const otherUser = await (await getDoc(otherUserRef)).data();
+        if (!otherUser) return console.warn("Can't remove not existing user");
+
+        // pozbywanie się przeciwnych uid
+        await updateDoc(currentUserRef, { friends: arrayRemove(otherUser.uid) });
+        await updateDoc(otherUserRef, { friends: arrayRemove(currentUser.val.uid) });
+      } catch (err) {
+        console.warn(err);
+      }
+    },
+    [currentUser],
+  );
+
+  /*
+    ------- wysyłanie wiadomości w czasie rzeczywistym  -------
+  */
+
+  const sendMessage = useCallback(
+    async (chatId: ChatId, value: Value) => {
+      if (!user || !currentUser || !currentUser.val || isLoading) throw Error(ErrorMessage);
+
+      try {
+        // informacja o rozpoczęciu przesyłania wiadomości
+        updateStatus({ sendingMessage: { isLoading: true, isError: false } });
+
+        // referencja do dokumentu wiadomości
+        const ref = doc(firestore, "messages", chatId) as DocumentReference<{ messages: Message[] }>;
+        const authorRef = doc(firestore, "users", currentUser.val.uid) as DocumentReference<User>;
+
+        const filesUrls: string[] = [];
+        if (value.files) {
+          for (let i = 0; i < value.files.length; i++) {
+            const file = value.files[i];
+            if (typeof file == "string") filesUrls.push(file);
+            else {
+              const filename = uuidv4();
+              const url = await uploadFile(await file.arrayBuffer(), "chats/files", filename);
+              filesUrls.push(url);
+            }
+          }
+        }
+
+        const newMessage: Message = {
+          author: { ref: authorRef, val: null },
+          text: value.text,
+          files: filesUrls,
+          createdAt: new Timestamp(+new Date() / 1000, 1000),
+        };
+
+        // dodoawanie wiadomości do tablicy przy pomocy funkcji arrayUnion()
+        await updateDoc(ref, { messages: arrayUnion(newMessage) });
+
+        // informacja o poprawnym wysłaniu wiadomości
+        updateStatus({ sendingMessage: { isLoading: false, isError: false } });
+      } catch (err) {
+        console.warn(err);
+        updateStatus({ sendingMessage: { isLoading: false, isError: true } });
+      }
+    },
+    [chats, currentUser],
+  );
+
+  /*
+    ------- tworzenie chatu(pokoju) w czasie rzeczywistym  -------
+  */
+
+  const createChat = useCallback(
+    async (participantsUids: string[], type: ChatType, name: string, photoURL?: File | string) => {
+      if (!user || !currentUser || !currentUser.val || isLoading) throw Error(ErrorMessage);
+
+      try {
+        // rozpoczęcie tworzenia czatu
+        updateStatus({ creatingChat: { isLoading: true, isError: false } });
+
+        // konwertowanie uczestników do tablicy UserObjekt[]
+        const participants: UserObject[] = [];
+        participantsUids.forEach((uid) => {
+          const ref = doc(firestore, "users", uid) as DocumentReference<User>;
+          participants.push({ ref, val: null });
+        });
+
+        // tymczasowa referencja bo ts się denerwuje
+        const tempRef = doc(firestore, "messages", "_temp") as DocumentReference<{ messages: Message[] }>;
+
+        const newChat = {
+          participants,
+          type,
+          messages: { ref: tempRef, values: [] },
+          name,
+          photoURL: null,
+          createdAt: new Timestamp(+new Date() / 1000, 1000),
+        };
+
+        // referencja do kolekcji czatów
+        const ref = collection(firestore, "chats") as CollectionReference<Chat>;
+        const { id } = await addDoc(ref, newChat);
+
+        const messagesRef = doc(firestore, "messages", id) as DocumentReference<{ messages: Message[] }>;
+        const chatRef = doc(firestore, "chats", id) as DocumentReference<Chat>;
+
+        // aktualizacja zdjęcia czatu, jeśli zostało podane jako parametr
+        if (photoURL && typeof photoURL != "string") {
+          const arrayBuffer = await photoURL.arrayBuffer();
+          const url = await uploadFile(arrayBuffer, "chats/main", id);
+          photoURL = url;
+        }
+
+        // aktualizacja referencji wiadomości i zdjęcia czatu
+        await updateDoc(chatRef, {
+          photoURL: typeof photoURL == "string" ? photoURL : null,
+          messages: { ref: messagesRef, values: [] },
+        });
+
+        // dodawnie dokumentu z wiadomościami czatu
+        await setDoc(messagesRef, { messages: [] });
+
+        // kolejkowanie stworzonego czatu,
+        // [ nie można od razu zarejestrować czatu, ponieważ useEffect od czatów nie zdąży pobrać aktualnych czatów ]
+        // [ rejestracja następuje w useEffekcie od kolejki! ]
+        setChatIdInQueue(id);
+
+        // informacja o udanym stworzeniu czatu
+        updateStatus({ creatingChat: { isLoading: false, isError: false } });
+
+        return { id };
+      } catch (err) {
+        console.warn(err);
+        updateStatus({ creatingChat: { isLoading: false, isError: true } });
+        return null;
+      }
+    },
+    [currentUser],
+  );
+
+  /*
+    ------- DEBUG -------
+  */
+
   console.log("USER:", formatted.user);
   console.log("FRIENDS:", formatted.friends);
   console.log("CHATS:", formatted.chats[0]);
+  console.log("STATUS", status);
+  console.log("USERS", users);
 
   /*
     ------- ostateczny objekt kontekstu  -------
@@ -450,6 +668,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     chats,
     friendsList,
     registeredChatId,
+    status,
     addFriend,
     removeFriend,
     sendMessage,

@@ -65,7 +65,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
     Trzy ikony na samej górze
 */
 
-export type HeaderProps = { toggleListVisibility: () => void; toggleCreateNewChatVisibility: () => void };
+export type HeaderProps = { toggleListVisibility: () => void; toggleCreateNewChatVisibility: (to: unknown) => void };
 
 export const Header = ({ toggleListVisibility, toggleCreateNewChatVisibility }: HeaderProps) => {
   return (

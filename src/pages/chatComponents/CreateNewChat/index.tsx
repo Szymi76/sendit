@@ -2,7 +2,7 @@ import { Autocomplete, Box, TextField } from "@mui/material";
 import { useState } from "react";
 
 import { useChat } from "../../../providers/ChatProvider";
-import { Header, Option, PhotoPreview, Wrapper } from "./Content";
+import { Header, Loading, Option, PhotoPreview, Wrapper } from "./Content";
 import { DataType, Errors, OptionItem, validateNameField, validateParticipantsField } from "./utils";
 
 type CreateNewChatProps = { toggleVisibility: () => void };
@@ -15,6 +15,7 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
     createChat,
     registerChat,
     formatted: { friends, user },
+    status: { creatingChat },
   } = useChat();
 
   // tworzy nowy czat jeśli dane się zgadzają
@@ -31,8 +32,8 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
     }
 
     const participantsIds = [...participants.map((p) => p.uid), user.uid];
-    const { id } = await createChat(participantsIds, "group", name, photoURL!);
-    registerChat(id);
+    await createChat(participantsIds, "group", name, photoURL!);
+
     toggleVisibility();
   };
 
@@ -57,7 +58,7 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
   return (
     <Wrapper>
       <Header handleCreateNewChat={handleCreateNewChat} />
-      <Box display="flex" flexDirection="column" gap={2} p={3} maxWidth={550}>
+      <Box display="flex" flexDirection="column" gap={4} p={3} maxWidth={550}>
         <Autocomplete
           multiple
           options={options}
@@ -95,6 +96,7 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
           />
         </Box>
       </Box>
+      {creatingChat.isLoading && <Loading />}
     </Wrapper>
   );
 };
