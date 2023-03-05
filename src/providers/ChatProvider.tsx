@@ -5,6 +5,7 @@ import {
   arrayUnion,
   collection,
   CollectionReference,
+  deleteDoc,
   doc,
   DocumentReference,
   getDoc,
@@ -42,23 +43,19 @@ export type ChatType = "individual" | "group";
 export type ChatsArray = ChatPretty[];
 export type ChatsMap = Map<ChatId, ChatPretty>;
 
+export type StatusValues = { isLoading: boolean; isError: boolean };
+
 export type Status = {
-  creatingChat: {
-    isLoading: boolean;
-    isError: boolean;
-  };
-  sendingMessage: {
-    isLoading: boolean;
-    isError: boolean;
-  };
-  fetchingChats: {
-    isLoading: boolean;
-    isError: boolean;
-  };
-  fetchingRegisteredChat: {
-    isLoading: boolean;
-    isError: boolean;
-  };
+  creatingChat: StatusValues;
+  sendingMessage: StatusValues;
+  fetchingChats: StatusValues;
+  fetchingRegisteredChat: StatusValues;
+  updatingChat: StatusValues;
+  deletingChat: StatusValues;
+};
+
+export type Utils = {
+  getChatName: (chat: ChatPretty) => string;
 };
 
 export type ChatProviderProps = { children: React.ReactNode };
@@ -69,7 +66,7 @@ export type ChatContextType = {
   friendsList: Map<Uid, UserObject>;
   registeredChatId: string | null;
   status: Status;
-  registerChat: (chatId: ChatId) => Promise<void>;
+  registerChat: (chatId: string | null) => Promise<void>;
   createChat: (
     participantsUids: string[],
     type: ChatType,
@@ -79,11 +76,14 @@ export type ChatContextType = {
   sendMessage: (chatId: ChatId, value: Value) => Promise<void>;
   addFriend: (uid: string) => Promise<void>;
   removeFriend: (uid: string) => Promise<void>;
+  updateChat: (chatId: string, name?: string, photoURL?: string | File | null) => Promise<void>;
+  deleteChat: (chatId: string) => Promise<void>;
   formatted: {
     user: User | null;
     friends: User[];
     chats: Readonly<[ChatsArray, ChatsMap]>;
   };
+  utils: Utils;
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -94,23 +94,14 @@ const ErrorMessage = "Hook is not ready, probably there is not user logged in.";
 const initialChatsValue = new Map<ChatId, Chat>();
 const initialCurrentUser = null;
 const initialFriendsList: Map<Uid, UserObject> = new Map<Uid, UserObject>();
+const initialStatusValue: StatusValues = { isLoading: false, isError: false };
 const initialStatus: Status = {
-  creatingChat: {
-    isLoading: false,
-    isError: false,
-  },
-  sendingMessage: {
-    isLoading: false,
-    isError: false,
-  },
-  fetchingChats: {
-    isLoading: false,
-    isError: false,
-  },
-  fetchingRegisteredChat: {
-    isLoading: false,
-    isError: false,
-  },
+  creatingChat: initialStatusValue,
+  sendingMessage: initialStatusValue,
+  fetchingChats: { isLoading: false, isError: false },
+  fetchingRegisteredChat: initialStatusValue,
+  updatingChat: initialStatusValue,
+  deletingChat: initialStatusValue,
 };
 
 /*
@@ -255,6 +246,21 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   };
 
   /*
+    ------- funkcje pomocnicze do wyciągania różnych informacji  -------
+  */
+
+  const utils: Utils = {
+    getChatName: (chat) => {
+      if (!formatted.user) throw new Error(ErrorMessage);
+
+      if (chat.type == "group") return chat.name;
+
+      const otherUser = chat.participants.filter((parti) => parti.uid != formatted.user!.uid)[0];
+      return otherUser.displayName;
+    },
+  };
+
+  /*
     ------- dodawanie użytkownika do mapy -------
   */
 
@@ -374,6 +380,12 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           return console.warn("Registered chat does not exist, probably chats has not been able to fetch");
         }
 
+        // informacja o rozpoczęciu pobierania wiadomości [ chats state nie jest zaktualiziwany w tym miejscu! ]
+        // if (chat.messages.values && chat.messages.values.length == 0) {
+        //   console.log(chat, chats);
+        //   updateStatus({ fetchingRegisteredChat: { isLoading: true, isError: false } });
+        // }
+
         // podmienianie wymaganych wartości w tablicy wiadomości
         const messagesArray = document.messages;
         const values = await helpers.expandMessagesArray(messagesArray);
@@ -382,10 +394,10 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         setChats((draft) => {
           draft.set(registeredChatId, { ...chat, messages });
         });
-      });
 
-      // informacja o udanym pobraniu wiadomości
-      updateStatus({ fetchingRegisteredChat: { isLoading: false, isError: false } });
+        // informacja o udanym pobraniu wiadomości
+        updateStatus({ fetchingRegisteredChat: { isLoading: false, isError: false } });
+      });
 
       return unsubcribe;
     } catch (err) {
@@ -461,10 +473,13 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   */
 
   const registerChat = useCallback(
-    async (chatId: ChatId) => {
+    async (chatId: string | null) => {
       try {
-        const chat = chats.get(chatId);
-        if (!chat) throw new Error("Can't register not exsisting chat");
+        if (chatId === null) setRegisteredChatId(null);
+        else {
+          const chat = chats.get(chatId);
+          if (!chat) throw new Error("Can't register not exsisting chat");
+        }
       } catch (err) {
         console.warn(err);
       }
@@ -650,6 +665,76 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   );
 
   /*
+    ------- aktualizacja czatu na podstawie id  -------
+  */
+
+  const updateChat = useCallback(
+    async (chatId: string, name?: string, photoURL?: string | File | null) => {
+      try {
+        // sprawdzanie czy istniejący czat istnieje
+        const chat = chats.get(chatId);
+        if (!chat) return console.warn("Can't update not existing chat");
+
+        // informacja o rozpoczęciu aktualizacji
+        updateStatus({ updatingChat: { isLoading: true, isError: false } });
+
+        // sprawdzanie czy dodać do aktualizacji nazwę czatu
+        const updateObject: { name?: string; photoURL?: string } = {};
+        if (name && name.length > 3 && name.length < 16) updateObject.name = name;
+
+        // sprawdzanie czy dodać do aktualizacji zdjęcie czatu
+        if (typeof photoURL == "string") updateObject.photoURL = photoURL;
+        else if (photoURL) {
+          const url = await uploadFile(await photoURL.arrayBuffer(), "chats/main", uuidv4());
+          updateObject.photoURL = url;
+        }
+
+        // referencja czatu do aktualizacji
+        const ref = doc(firestore, "chats", chatId);
+        await updateDoc(ref, updateObject);
+
+        updateStatus({ updatingChat: { isLoading: false, isError: false } });
+      } catch (err) {
+        console.warn(err);
+        updateStatus({ updatingChat: { isLoading: false, isError: true } });
+      }
+    },
+    [chats],
+  );
+
+  /*
+    ------- usuwanie czatu na podstawie id  -------
+  */
+
+  const deleteChat = useCallback(
+    async (chatId: string) => {
+      try {
+        // sprawdzanie czy istniejący czat istnieje
+        const chat = chats.get(chatId);
+        if (!chat) return console.warn("Can't delete not existing chat");
+
+        // informacja o rozpoczęciu usuwania
+        updateStatus({ deletingChat: { isLoading: true, isError: false } });
+
+        // referencje do chatu i wiadomości
+        // [ wiadomości mają taki sam id jak czat! ]
+        const chatRef = doc(firestore, "chats", chatId);
+        const messagesRef = doc(firestore, "messages", chatId);
+
+        // usuwanie
+        await deleteDoc(chatRef);
+        await deleteDoc(messagesRef);
+
+        updateStatus({ updatingChat: { isLoading: false, isError: false } });
+      } catch (err) {
+        console.warn(err);
+        updateStatus({ updatingChat: { isLoading: false, isError: true } });
+      }
+    },
+    [chats],
+  );
+
+  /*
     ------- DEBUG -------
   */
 
@@ -673,8 +758,11 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     removeFriend,
     sendMessage,
     createChat,
+    updateChat,
+    deleteChat,
     registerChat,
     formatted,
+    utils,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

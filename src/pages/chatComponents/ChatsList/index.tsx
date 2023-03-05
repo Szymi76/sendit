@@ -3,6 +3,7 @@ import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, List, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
+import { RotatingLines } from "react-loader-spinner";
 
 import useToggle from "../../../hooks/useToggle";
 import { useChat } from "../../../providers/ChatProvider";
@@ -13,11 +14,12 @@ type ChatListProps = { toggleCreateNewChatVisibility: (to: unknown) => void };
 
 const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   const {
+    registerChat,
     formatted: {
       chats: [chatsArray],
       user,
     },
-    registerChat,
+    status: { fetchingChats },
   } = useChat();
   const [isListVisible, toggleListVisibility] = useToggle(true);
   const [query, setQuery] = useState("");
@@ -33,6 +35,17 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   // szerokość wrappera zależna od aktualnej szerokości okna
   const widthOnLarge = isListVisible ? "25%" : "50x";
   const widthOnSmall = isListVisible ? "100%" : "50px";
+
+  const chatsList = useMemo(() => {
+    return filteredChats.map((chat) => (
+      <SingleListItem
+        key={chat.chatId}
+        chat={chat}
+        currentUserUid={user!.uid}
+        onClick={() => handleListItemClick(chat.chatId)}
+      />
+    ));
+  }, [filterChats, chatsArray, query]);
 
   return (
     <Wrapper sx={{ width: { xs: widthOnSmall, md: widthOnLarge, minWidth: isListVisible ? "375px" : "0" } }}>
@@ -58,21 +71,21 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
             <HistoryIcon />
             <PeopleOutlineIcon />
           </ActionsWrapper>
-          {filteredChats.length == 0 ? (
-            <Typography variant="subtitle1" p={2}>
-              Brak wyników
-            </Typography>
+
+          {fetchingChats.isLoading ? (
+            <Box display="flex" justifyContent="center">
+              <RotatingLines width="26" strokeColor="white" />
+            </Box>
           ) : (
-            <List sx={{ overflow: "auto" }}>
-              {filteredChats.map((chat) => (
-                <SingleListItem
-                  key={chat.chatId}
-                  chat={chat}
-                  currentUserUid={user!.uid}
-                  onClick={() => handleListItemClick(chat.chatId)}
-                />
-              ))}
-            </List>
+            <>
+              {filterChats.length == 0 ? (
+                <Typography variant="subtitle1" p={2}>
+                  Brak wyników
+                </Typography>
+              ) : (
+                <List sx={{ overflowY: "auto", overflowX: "hidden" }}>{chatsList}</List>
+              )}
+            </>
           )}
         </>
       )}

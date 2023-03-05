@@ -43,7 +43,7 @@ export type WrapperProps = { children: React.ReactNode };
 export const Wrapper = styled(Box)(({ theme }) => ({
   [theme.breakpoints.between("xs", "md")]: {
     position: "absolute",
-    zIndex: 2000,
+    zIndex: 1200,
     left: 0,
   },
   position: "relative",
@@ -56,7 +56,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
   color: theme.palette.common.white,
   maxWidth: 375,
   transform: "width",
-  transitionDuration: "200ms",
+  transitionDuration: "250ms",
   borderTop: "1px solid",
   borderColor: "rgba(0,0,0,.10)",
 }));
