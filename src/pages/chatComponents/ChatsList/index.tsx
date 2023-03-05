@@ -7,7 +7,7 @@ import { RotatingLines } from "react-loader-spinner";
 
 import useToggle from "../../../hooks/useToggle";
 import { useChat } from "../../../providers/ChatProvider";
-import { ActionsWrapper, Header, HiddenList, SearchInput, SingleListItem, Wrapper } from "./Content";
+import { ActionsWrapper, Header, HiddenList, Loading, SearchInput, SingleListItem, Wrapper } from "./components";
 import { filterChats } from "./utils";
 
 type ChatListProps = { toggleCreateNewChatVisibility: (to: unknown) => void };
@@ -27,6 +27,7 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   // przefiltrowany chat
   const filteredChats = useMemo(() => filterChats(chatsArray, query), [chatsArray, query]);
 
+  // rejestrowanie chatu na podstawie id
   const handleListItemClick = async (id: string) => {
     await registerChat(id);
     toggleCreateNewChatVisibility(false);
@@ -36,16 +37,23 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   const widthOnLarge = isListVisible ? "25%" : "50x";
   const widthOnSmall = isListVisible ? "100%" : "50px";
 
-  const chatsList = useMemo(() => {
+  // lista poszczególnych czatów
+  // [ brak wrapper -> tablica JSX ]
+  const chatsAsJSXArray = useMemo(() => {
     return filteredChats.map((chat) => (
-      <SingleListItem
-        key={chat.chatId}
-        chat={chat}
-        currentUserUid={user!.uid}
-        onClick={() => handleListItemClick(chat.chatId)}
-      />
+      <SingleListItem key={chat.chatId} chat={chat} onClick={() => handleListItemClick(chat.chatId)} />
     ));
   }, [filterChats, chatsArray, query]);
+
+  // lista znalezionych czatów lub tekst z informacją o braku wyników
+  const chatslistOrNotFound =
+    filterChats.length == 0 ? (
+      <Typography variant="subtitle1" p={2}>
+        Brak wyników
+      </Typography>
+    ) : (
+      <List sx={{ overflowY: "auto", overflowX: "hidden" }}>{chatsAsJSXArray}</List>
+    );
 
   return (
     <Wrapper sx={{ width: { xs: widthOnSmall, md: widthOnLarge, minWidth: isListVisible ? "375px" : "0" } }}>
@@ -53,12 +61,13 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
       {!isListVisible ? (
         <HiddenList toggleListVisibility={toggleListVisibility} />
       ) : (
-        // cała lista wraz ze wszystkimi elementami interakcji
         <>
           <Header
             toggleListVisibility={toggleListVisibility}
             toggleCreateNewChatVisibility={toggleCreateNewChatVisibility}
           />
+
+          {/* pole tekstowe */}
           <Box position="relative" px={2}>
             <SearchIcon sx={{ position: "absolute", top: "50%", transform: "translate(50%,-50%)" }} />
             <SearchInput
@@ -67,26 +76,15 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
               onChange={(e) => setQuery(e.target.value)}
             />
           </Box>
+
+          {/* przyciski pod polem tekstowym */}
           <ActionsWrapper>
             <HistoryIcon />
             <PeopleOutlineIcon />
           </ActionsWrapper>
 
-          {fetchingChats.isLoading ? (
-            <Box display="flex" justifyContent="center">
-              <RotatingLines width="26" strokeColor="white" />
-            </Box>
-          ) : (
-            <>
-              {filterChats.length == 0 ? (
-                <Typography variant="subtitle1" p={2}>
-                  Brak wyników
-                </Typography>
-              ) : (
-                <List sx={{ overflowY: "auto", overflowX: "hidden" }}>{chatsList}</List>
-              )}
-            </>
-          )}
+          {/* informacja o ładowaniu lub pokazanie listy czatów */}
+          {fetchingChats.isLoading ? <Loading /> : chatslistOrNotFound}
         </>
       )}
     </Wrapper>

@@ -1,5 +1,3 @@
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import ClearIcon from "@mui/icons-material/Clear";
 import TryIcon from "@mui/icons-material/Try";
 import { Avatar, Box, Button, Fab, IconButton, styled, Typography } from "@mui/material";
 import { RotatingLines } from "react-loader-spinner";
@@ -58,41 +56,6 @@ export const FileInput = ({ label, onChange }: FileInputProps) => {
       {label}
       <input type="file" hidden onChange={onChange} />
     </Button>
-  );
-};
-
-/* 
-    Podgląd wybranego zdjęcia i opcja usunięcia go
-*/
-
-export type PhotoPreviewProps = {
-  photoURL: File | null;
-  name: string;
-  onClear: () => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-};
-
-export const PhotoPreview = ({ photoURL, name, onClear, onChange }: PhotoPreviewProps) => {
-  return (
-    <Box position="relative">
-      <Avatar
-        sx={{ width: 88, height: 88 }}
-        src={photoURL ? URL.createObjectURL(photoURL) : undefined}
-        alt="Awatar nowego czatu"
-      >
-        {!photoURL && name[0]}
-      </Avatar>
-      <Fab size="small" sx={{ position: "absolute", bottom: -10, left: 70, zIndex: 10 }}>
-        {photoURL ? (
-          <ClearIcon onClick={onClear} />
-        ) : (
-          <IconButton hidden component="label">
-            <AddPhotoAlternateIcon />
-            <input type="file" hidden onChange={onChange} />
-          </IconButton>
-        )}
-      </Fab>
-    </Box>
   );
 };
 

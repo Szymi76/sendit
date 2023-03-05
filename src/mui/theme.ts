@@ -59,6 +59,14 @@ const theme = createTheme({
         },
       ],
     },
+    MuiGrid: {
+      styleOverrides: {
+        root: {
+          // paddingLeft: "0px !important",
+          // paddingTop: "0px !important",
+        },
+      },
+    },
   },
 });
 

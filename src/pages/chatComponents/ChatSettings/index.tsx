@@ -1,14 +1,13 @@
 import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import PeopleIcon from "@mui/icons-material/People";
-import { LoadingButton } from "@mui/lab";
 import { Box, Button, Fab, List, TextField, Typography } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AvatarV2, FileInput, SimpleModal } from "../../../components/components";
 import useToggle from "../../../hooks/useToggle";
 import { useChat } from "../../../providers/ChatProvider";
-import { Content, Footer, Header, ListSingleItem, Wrapper } from "./Content";
+import { Content, Footer, Header, ListSingleItem, Wrapper } from "./components";
 import { UpdateValuesTypes } from "./utils";
 
 // import ClickAwayListener from "@mui/material/ClickAwayListener";
@@ -33,16 +32,19 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
 
   const chat = chatsMap.get(registeredChatId!)!;
 
+  // usuwanie czatu
   const handleDeleteChat = async () => {
     await deleteChat(chat.chatId);
     await registerChat(null);
   };
 
+  // aktualizowanie czatu
   const handleUpdateChat = async () => {
     await updateChat(chat.chatId, updateValues.name, updateValues.photoURL);
     toggleUpdateChatModalVisibility(false);
   };
 
+  // zamykanie modali
   const closeDeleteChatModal = () => toggleDeleteChatModalVisibility(false);
   const closeUpdateChatModal = () => toggleUpdateChatModalVisibility(false);
 
@@ -50,6 +52,7 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
     setUpdateValues({ name: chat.name, photoURL: chat.photoURL });
   }, [chat]);
 
+  // onChange na zmianę zdjęcia chatu do aktualizacji
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     setUpdateValues({ ...updateValues, photoURL: files ? files[0] : null });

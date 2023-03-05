@@ -1,5 +1,3 @@
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import ClearIcon from "@mui/icons-material/Clear";
 import {
   Box,
   Button,
@@ -15,9 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 
-import { AvatarV2, ModalContentWrapper } from "../../../components/components";
-import { ChatPretty, User } from "../../../firebase/types";
-import { UpdateValuesTypes } from "./utils";
+import { AvatarV2 } from "../../../components/components";
+import { User } from "../../../firebase/types";
 
 /* 
     Biały kontener ustawień czatu

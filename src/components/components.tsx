@@ -52,6 +52,19 @@ export const ModalContentWrapper = styled(Box)(({ theme }) => ({
 }));
 
 /*
+    Biały kontener z zawartością modala
+*/
+
+const SimpleModalContent = styled(Box)(({ theme }) => ({
+  backgroundColor: theme.palette.common.white,
+  border: `1px solid ${theme.palette.grey[500]}`,
+  padding: theme.spacing(3),
+  borderRadius: theme.spacing(1),
+  width: "85%",
+  maxWidth: 550,
+}));
+
+/*
     Prosty modal z białym kontenerem i listą przycisków na dole
 */
 
@@ -69,42 +82,33 @@ export const SimpleModal = (props: SimpleModalProps) => {
     alignItems: "center",
   };
 
-  const Content = styled(Box)(({ theme }) => ({
-    backgroundColor: theme.palette.common.white,
-    border: `1px solid ${theme.palette.grey[500]}`,
-    padding: theme.spacing(3),
-    borderRadius: theme.spacing(1),
-    width: "85%",
-    maxWidth: 550,
-  }));
-
   return (
     <Modal {...props} sx={defaultStyles}>
-      <Content width="85%" maxWidth="500px" display="flex" flexDirection="column" gap={1}>
-        <FocusTrap open>
-          <>
-            <Typography fontWeight={500} fontSize={22}>
-              {props.primarytext}
+      <SimpleModalContent width="85%" maxWidth="500px" display="flex" flexDirection="column" gap={1}>
+        {/* <FocusTrap open> */}
+        <>
+          <Typography fontWeight={500} fontSize={22}>
+            {props.primarytext}
+          </Typography>
+          {props.secondarytext && (
+            <Typography fontSize={14} color={(theme) => theme.palette.grey[700]}>
+              {props.secondarytext}
             </Typography>
-            {props.secondarytext && (
-              <Typography fontSize={14} color={(theme) => theme.palette.grey[700]}>
-                {props.secondarytext}
-              </Typography>
-            )}
-            <Divider />
+          )}
+          <Divider />
 
-            {props.children}
+          {props.children}
 
-            <Box display="flex" justifyContent="flex-end" flexWrap="wrap" gap={1} mt={2}>
-              {props.buttons.map((buttonProps, index) => (
-                <Button key={`modal-button-${index}`} variant="contained" {...buttonProps}>
-                  {buttonProps.label}
-                </Button>
-              ))}
-            </Box>
-          </>
-        </FocusTrap>
-      </Content>
+          <Box display="flex" justifyContent="flex-end" flexWrap="wrap" gap={1} mt={2}>
+            {props.buttons.map((buttonProps, index) => (
+              <Button key={`modal-button-${index}`} variant="contained" {...buttonProps}>
+                {buttonProps.label}
+              </Button>
+            ))}
+          </Box>
+        </>
+        {/* </FocusTrap> */}
+      </SimpleModalContent>
     </Modal>
   );
 };

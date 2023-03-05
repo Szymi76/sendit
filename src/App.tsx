@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
+import Beta from "./pages/beta";
 import Chat from "./pages/chat";
 import ChatV2 from "./pages/chatComponents";
 import Home from "./pages/home";
@@ -26,6 +27,7 @@ const App = () => {
             <Route path="/chat" element={<Chat />} />
             <Route path="/search" element={<Search />} />
             <Route path="/chats" element={<ChatV2 />} />
+            <Route path="/beta" element={<Beta />} />
           </Route>
           <Route element={<Access.All />}>
             <Route path="/" element={<Navigate to="/home" replace />} />

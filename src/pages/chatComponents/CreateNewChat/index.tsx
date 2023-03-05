@@ -1,8 +1,9 @@
 import { Autocomplete, Box, TextField } from "@mui/material";
 import { useState } from "react";
 
+import { FileInput } from "../../../components/components";
 import { useChat } from "../../../providers/ChatProvider";
-import { Header, Loading, Option, PhotoPreview, Wrapper } from "./Content";
+import { Header, Loading, Option, Wrapper } from "./components";
 import { DataType, Errors, OptionItem, validateNameField, validateParticipantsField } from "./utils";
 
 type CreateNewChatProps = { toggleVisibility: () => void };
@@ -13,7 +14,6 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
   const {
     friendsList,
     createChat,
-    registerChat,
     formatted: { friends, user },
     status: { creatingChat },
   } = useChat();
@@ -88,11 +88,11 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
           helperText={errors.name && errors.name}
         />
         <Box>
-          <PhotoPreview
-            name={data.name}
-            photoURL={data.photoURL}
-            onClear={() => setData({ ...data, photoURL: null })}
-            onChange={(e) => setData({ ...data, photoURL: e.target.files![0] })}
+          <FileInput
+            textToRepleceFile={data.name}
+            file={data.photoURL}
+            onFileChange={(e) => setData({ ...data, photoURL: e.target.files![0] })}
+            onFileClear={() => setData({ ...data, photoURL: null })}
           />
         </Box>
       </Box>

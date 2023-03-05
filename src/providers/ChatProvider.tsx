@@ -380,12 +380,6 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
           return console.warn("Registered chat does not exist, probably chats has not been able to fetch");
         }
 
-        // informacja o rozpoczęciu pobierania wiadomości [ chats state nie jest zaktualiziwany w tym miejscu! ]
-        // if (chat.messages.values && chat.messages.values.length == 0) {
-        //   console.log(chat, chats);
-        //   updateStatus({ fetchingRegisteredChat: { isLoading: true, isError: false } });
-        // }
-
         // podmienianie wymaganych wartości w tablicy wiadomości
         const messagesArray = document.messages;
         const values = await helpers.expandMessagesArray(messagesArray);
@@ -738,11 +732,11 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     ------- DEBUG -------
   */
 
-  console.log("USER:", formatted.user);
-  console.log("FRIENDS:", formatted.friends);
-  console.log("CHATS:", formatted.chats[0]);
-  console.log("STATUS", status);
-  console.log("USERS", users);
+  // console.log("USER:", formatted.user);
+  // console.log("FRIENDS:", formatted.friends);
+  // console.log("CHATS:", formatted.chats[0]);
+  // console.log("STATUS", status);
+  // console.log("USERS", users);
 
   /*
     ------- ostateczny objekt kontekstu  -------

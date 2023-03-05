@@ -3,7 +3,6 @@ import EastIcon from "@mui/icons-material/East";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import WestIcon from "@mui/icons-material/West";
 import {
-  Avatar,
   Box,
   Fab,
   ListItem,
@@ -15,8 +14,11 @@ import {
   TextField,
   Theme,
 } from "@mui/material";
+import { RotatingLines } from "react-loader-spinner";
 
+import { AvatarV2 } from "../../../components/components";
 import { ChatPretty } from "../../../firebase/types";
+import { useChat } from "../../../providers/ChatProvider";
 
 /*
     Styl dla ikon
@@ -25,13 +27,6 @@ import { ChatPretty } from "../../../firebase/types";
 const iconSx: SxProps<Theme> = {
   fontSize: 30,
   color: (theme) => theme.palette.common.white,
-  cursor: "pointer",
-};
-
-const fabSx: SxProps<Theme> = {
-  bgcolor: "transparent",
-  boxShadow: "none",
-  ":hover": { bgcolor: "transparent", backdropFilter: "brightness(90%)" },
 };
 
 /*
@@ -70,14 +65,14 @@ export type HeaderProps = { toggleListVisibility: () => void; toggleCreateNewCha
 export const Header = ({ toggleListVisibility, toggleCreateNewChatVisibility }: HeaderProps) => {
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" px={2}>
-      <Fab size="small" sx={fabSx}>
+      <Fab variant="transparent" size="small">
         <WestIcon sx={iconSx} onClick={toggleListVisibility} />
       </Fab>
       <Box display="flex" alignItems="center" gap={1}>
-        <Fab color="primary" size="small" sx={fabSx}>
+        <Fab variant="transparent" size="small">
           <AddCircleIcon sx={iconSx} onClick={toggleCreateNewChatVisibility} />
         </Fab>
-        <Fab size="small" sx={fabSx}>
+        <Fab variant="transparent" size="small">
           <MoreVertIcon sx={iconSx} />
         </Fab>
       </Box>
@@ -120,7 +115,7 @@ export type HiddenListProps = { toggleListVisibility: () => void };
 export const HiddenList = ({ toggleListVisibility }: HiddenListProps) => {
   return (
     <Box display="flex" justifyContent="center">
-      <Fab size="small" sx={fabSx}>
+      <Fab variant="transparent" size="small">
         <EastIcon sx={iconSx} onClick={toggleListVisibility} />
       </Fab>
     </Box>
@@ -131,22 +126,31 @@ export const HiddenList = ({ toggleListVisibility }: HiddenListProps) => {
    Pojedyńczy element listy czatów
 */
 
-export type SingleListItemProps = { chat: ChatPretty; currentUserUid: string; onClick: () => void };
+export type SingleListItemProps = { chat: ChatPretty; onClick: () => void };
 
-export const SingleListItem = ({ chat, currentUserUid, onClick }: SingleListItemProps) => {
-  const participantsWithoutMe = chat.participants.filter((p) => p.uid != currentUserUid);
+export const SingleListItem = ({ chat, onClick }: SingleListItemProps) => {
+  const {
+    utils: { getChatName },
+  } = useChat();
 
-  const name = chat.type == "group" ? chat.name : participantsWithoutMe[0].displayName;
-  const photoURL = chat.photoURL ? chat.photoURL : undefined;
+  const chatName = getChatName(chat);
 
   return (
     <ListItem disablePadding>
       <ListItemButton sx={{ py: 2 }} onClick={onClick}>
         <ListItemAvatar>
-          <Avatar src={photoURL}>{!photoURL && name[0]}</Avatar>
+          <AvatarV2 src={chat.photoURL} name={chatName} />
         </ListItemAvatar>
-        <ListItemText primary={name} />
+        <ListItemText primary={chatName} />
       </ListItemButton>
     </ListItem>
+  );
+};
+
+export const Loading = () => {
+  return (
+    <Box display="flex" justifyContent="center">
+      <RotatingLines width="26" strokeColor="white" />
+    </Box>
   );
 };

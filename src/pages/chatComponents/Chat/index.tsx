@@ -2,8 +2,7 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Fab, Grid, Input, Typography } from "@mui/material";
-import ClickAwayListener from "@mui/material/ClickAwayListener";
+import { Box, Fab, Input, Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,7 +21,7 @@ import {
   MessageBox,
   MessagesWrapper,
   Wrapper,
-} from "./Content";
+} from "./components";
 
 const Chat = () => {
   const [text, setText] = useState("");
@@ -42,6 +41,7 @@ const Chat = () => {
     status: { sendingMessage, fetchingRegisteredChat },
   } = useChat();
 
+  // aktualnie zarejestrowany czat
   const chat = useMemo(() => {
     const currentChat = chatsMap.get(registeredChatId!);
     return currentChat!;
@@ -63,7 +63,7 @@ const Chat = () => {
   // skrolowanie czatu na sam dół po załadowaniu
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollBy(0, 9999);
-  }, [chatsArray]);
+  }, [chatsArray, registeredChatId]);
 
   // wiadomości jako tablica JSX.Element
   const messages = useMemo(() => {
@@ -71,7 +71,7 @@ const Chat = () => {
       const key = `${msg.createdAt.seconds}-${i}-${msg.text.slice(0, 5)}`;
       return <MessageBox key={key} currentUser={user!} message={msg} />;
     });
-  }, [chatsArray]);
+  }, [chatsArray, registeredChatId]);
 
   // dodawanie plików
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,9 +100,10 @@ const Chat = () => {
           </Box>
         )}
       </Header>
+
       {/* wiadomości */}
       <MessagesWrapper ref={chatRef} p={3}>
-        {!fetchingRegisteredChat.isLoading && <GrayText>Napisz coś aby rozpocząć rozmowę</GrayText>}
+        <GrayText>Napisz coś aby rozpocząć rozmowę</GrayText>
         {messages}
         {sendingMessage.isLoading && (
           <Box display="flex" justifyContent="flex-end" m={3}>
@@ -110,6 +111,7 @@ const Chat = () => {
           </Box>
         )}
       </MessagesWrapper>
+
       {/* dolny szary kontener z inputem */}
       <InputWrapper position="relative" py={1} px={3}>
         <Input
@@ -120,12 +122,14 @@ const Chat = () => {
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key == "Enter" && handleSendMessage()}
         />
+
         {/* ikony po prawej stronie */}
         <Box position="relative" display="flex" alignItems="center" gap={1}>
           {/* toglowanie emotek */}
           <Fab variant="transparent" onClick={toggleEmojisVisibility}>
             <SentimentSatisfiedAltIcon />
           </Fab>
+
           {/* dodawanie plików */}
           <Fab variant="transparent">
             <IconButton hidden component="label">
@@ -133,10 +137,12 @@ const Chat = () => {
               <input type="file" multiple accept="image/png, image/jpeg" hidden onChange={handleFileChange} />
             </IconButton>
           </Fab>
+
           {/* wysyłanie wiadomości */}
           <Fab onClick={handleSendMessage} size="medium" color="primary">
             <SendIcon />
           </Fab>
+
           {/* emotki  */}
           {isEmojisVisible && (
             <EmojiWrapper toggleEmojisVisibility={toggleEmojisVisibility}>
@@ -144,6 +150,7 @@ const Chat = () => {
             </EmojiWrapper>
           )}
         </Box>
+
         {/* podgląd wybranych plików */}
         {files.length > 0 && (
           <FilesPreviewWrapper container rowSpacing={1} columnSpacing={1}>
@@ -153,6 +160,7 @@ const Chat = () => {
           </FilesPreviewWrapper>
         )}
       </InputWrapper>
+
       {/* ustawienia czatu */}
       <ChatSettings areSettingsVisible={areSettingsVisible} toggleSettingsVisibility={toggleSettingsVisibility} />
     </Wrapper>

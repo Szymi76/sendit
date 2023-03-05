@@ -1,5 +1,4 @@
 import CloseIcon from "@mui/icons-material/Close";
-import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, ClickAwayListener, Fab, Grid, styled, Typography } from "@mui/material";
 
 import { AvatarV2 } from "../../../components/components";
@@ -35,6 +34,7 @@ export const Header = ({ children, chat, currentUserUid }: HeaderProps) => {
       justifyContent="space-between"
       alignItems="center"
       borderBottom="1px solid"
+      itemType="1"
       sx={{ borderColor: (theme) => theme.palette.grey[300] }}
       bgcolor={(theme) => theme.palette.grey[100]}
       padding={2}
@@ -208,7 +208,8 @@ export const FilesPreviewWrapper = styled(Grid)(({ theme }) => ({
   width: "90%",
   borderRadius: 8,
   backgroundColor: theme.palette.primary.main,
-  padding: theme.spacing(2),
+  paddingRight: theme.spacing(1),
+  paddingBottom: theme.spacing(1),
 }));
 
 /* 
@@ -221,16 +222,18 @@ export const FileItem = ({ file, single, onRemove }: FileItemProps) => {
   const src = URL.createObjectURL(file);
 
   return (
-    <Grid position="relative" xs={single ? 12 : 6} display="flex" justifyContent="center" alignItems="center">
+    <Grid item position="relative" xs={single ? 12 : 6} display="flex" justifyContent="center" alignItems="center">
       <Box position="absolute" height="100%" width="100%" sx={{ opacity: "0", ":hover": { opacity: "1" } }}>
         <CloseIcon
           onClick={onRemove}
+          fontSize="large"
           sx={{
             position: "absolute",
-            top: 10,
-            right: 10,
+            top: "50%",
+            right: "50%",
+            transform: "translate(50%, -50%)",
             cursor: "pointer",
-            bgcolor: "rgba(255,255,255,.35)",
+            bgcolor: "rgba(255,255,255,.50)",
             borderRadius: 9999,
             color: (theme) => theme.palette.grey[900],
           }}
