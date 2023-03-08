@@ -1,4 +1,4 @@
-import { DocumentReference, Timestamp } from "firebase/firestore";
+import { CollectionReference, DocumentReference, Timestamp } from "firebase/firestore";
 
 export type Uid = string;
 
@@ -26,7 +26,7 @@ export type Chat = {
   name: string;
   type: ChatType;
   createdAt: Timestamp;
-  messages: { ref: DocumentReference<{ messages: Message[] }>; values: Message[] | null };
+  messages: { ref: null; values: Message[] | null };
 };
 
 export type PrettyMessage = Omit<Message, "author"> & {
