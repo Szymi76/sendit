@@ -1,10 +1,11 @@
-import { onSnapshot } from "firebase/firestore";
+import { onSnapshot, query, where } from "firebase/firestore";
 import { createContext, useEffect } from "react";
 
 import { firestore } from "../../../firebase";
 import useAuth from "../../../firebase/hooks/useAuth";
 import useChat from "../index";
 import { Chat } from "../types/client";
+import { compareChatAndReplace } from "../utils/compare";
 import { convertChat } from "../utils/converters";
 import refs from "../utils/refs";
 
@@ -18,18 +19,19 @@ export type ChatsProviderProps = { children: React.ReactNode };
  */
 export const ChatsProvider = ({ children }: ChatsProviderProps) => {
   const { user, isLoading } = useAuth();
+  const updateStates = useChat((state) => state.updateStates);
 
   useEffect(() => {
     if (isLoading || !user) return;
 
     const currentUserRef = refs.users.doc(user.uid);
-    // const q = query(refs.chats.col, where("participants", "array-contains", { ref: currentUserRef, val: null }));
+    const q = query(refs.chats.col, where("participants", "array-contains", currentUserRef));
 
-    const unsubscribe = onSnapshot(refs.chats.col, async (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       const chats: Chat[] = [];
 
       // informacja o rozpoczęciu pobierania
-      useChat.getState().updateStates({ fetchingChats: { isLoading: true, isError: false } });
+      updateStates({ fetchingChats: { isLoading: true, isError: false } });
 
       // pętla konwertująca każdy czat
       for (let i = 0; i < snapshot.docs.length; i++) {
@@ -37,11 +39,13 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
         const chat = snapshot.docs[i].data();
 
         const convertedChat = await convertChat(chat, chatId);
-        chats.push(convertedChat);
+        const comparedChat = compareChatAndReplace(convertedChat);
+
+        chats.push(comparedChat);
       }
 
       // informacja o zakończeniu pobierania
-      useChat.getState().updateStates({ fetchingChats: { isLoading: false, isError: false } });
+      updateStates({ fetchingChats: { isLoading: false, isError: false } });
 
       // aktualizowanie czatów
       useChat.setState({ chats });

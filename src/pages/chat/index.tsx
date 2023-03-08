@@ -1,40 +1,42 @@
-import { addDoc, collection, CollectionReference, doc, getDocs, onSnapshot } from "firebase/firestore";
-import produce from "immer";
-import React, { useCallback, useEffect, useState } from "react";
-import { useImmer } from "use-immer";
+import { Box } from "@mui/material";
 
-import { firestore } from "../../firebase";
-import { User } from "../../firebase/types";
-import { useChat } from "../../providers/ChatProvider";
-import ActiveChat from "./ActiveChat";
+import useChat from "../../hooks/useChat/index";
+import { ChatsProvider } from "../../hooks/useChat/providers/ChatsProvider";
+import { CurrentUserProvider } from "../../hooks/useChat/providers/CurrentUserProvider";
+import { FriendsProvider } from "../../hooks/useChat/providers/FriendsProvider";
+import { MessagesProvider } from "../../hooks/useChat/providers/MessagesProvider";
+import { SubscriptionProvider } from "../../hooks/useChat/providers/SubscriptionProvider";
+import useToggle from "../../hooks/useToggle";
+import Chat from "./Chat";
 import ChatsList from "./ChatsList";
 import CreateNewChat from "./CreateNewChat";
-import UsersPanel from "./UsersPanel";
 
-const ChatPage = () => {
-  const [usersList, setUsersList] = useState<User[]>([]);
+const ChatV3 = () => {
+  const [isCreateNewChatVisible, toggleCreateNewChatVisibility] = useToggle();
+  const currentChat = useChat((state) => state.currentChat);
 
-  // lista wszystkich użytkowników
-  useEffect(() => {
-    const ref = collection(firestore, "users") as CollectionReference<User>;
-    const users: User[] = [];
-    getDocs(ref).then((docs) => {
-      docs.forEach((doc) => {
-        const fetchedUser = doc.data();
-        if (fetchedUser) users.push(fetchedUser);
-      });
-      setUsersList(users);
-    });
-  }, [firestore]);
+  const createNewChat = isCreateNewChatVisible && <CreateNewChat toggleVisibility={toggleCreateNewChatVisibility} />;
+  const chat = currentChat && !isCreateNewChatVisible && <Chat />;
+  const defaultPage = !isCreateNewChatVisible && !currentChat && <h1>Sendit</h1>;
 
   return (
-    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-      <UsersPanel />
-      <CreateNewChat />
-      <ChatsList />
-      <ActiveChat />
-    </div>
+    <CurrentUserProvider>
+      <FriendsProvider>
+        <ChatsProvider>
+          <MessagesProvider>
+            <SubscriptionProvider>
+              <Box display="flex" paddingLeft={{ xs: "50px", md: 0 }}>
+                <ChatsList toggleCreateNewChatVisibility={toggleCreateNewChatVisibility} />
+                {createNewChat}
+                {chat}
+                {defaultPage}
+              </Box>
+            </SubscriptionProvider>
+          </MessagesProvider>
+        </ChatsProvider>
+      </FriendsProvider>
+    </CurrentUserProvider>
   );
 };
 
-export default ChatPage;
+export default ChatV3;

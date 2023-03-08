@@ -3,10 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
-import Beta from "./pages/beta";
 import Chat from "./pages/chat";
-import ChatV2 from "./pages/chatComponents";
-import ChatV3 from "./pages/chatV3";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/register";
@@ -24,12 +21,8 @@ const App = () => {
             <Route path="/stworz-konto" element={<Register />} />
           </Route>
           <Route element={<Access.Authenticated />}>
-            <Route path="/private" element={<h1>Tylko dla zalogowanych</h1>} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/search" element={<Search />} />
-            <Route path="/chats" element={<ChatV2 />} />
-            <Route path="/beta" element={<Beta />} />
-            <Route path="/chatv3" element={<ChatV3 />} />
           </Route>
           <Route element={<Access.All />}>
             <Route path="/" element={<Navigate to="/home" replace />} />

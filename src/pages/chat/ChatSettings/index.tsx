@@ -5,8 +5,8 @@ import { Box, Button, Fab, List, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { AvatarV2, FileInput, SimpleModal } from "../../../components/components";
+import { useChatSettings } from "../../../hooks/useChat/hooks";
 import useToggle from "../../../hooks/useToggle";
-import { useChat } from "../../../providers/ChatProvider";
 import { Content, Footer, Header, ListSingleItem, Wrapper } from "./components";
 import { UpdateValuesTypes } from "./utils";
 
@@ -18,29 +18,19 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
   const [isDeleteChatModalVisible, toggleDeleteChatModalVisibility] = useToggle();
   const [isUpdateChatModalVisible, toggleUpdateChatModalVisibility] = useToggle();
   const [updateValues, setUpdateValues] = useState<UpdateValuesTypes>({ name: "", photoURL: null });
-  const {
-    registeredChatId,
-    registerChat,
-    deleteChat,
-    updateChat,
-    formatted: {
-      chats: [chatsArray, chatsMap],
-    },
-    status: { deletingChat, updatingChat },
-    utils: { getChatName },
-  } = useChat();
+  const { currentChat, subscribe, subscribingTo, updateChat, deleteChat, getChatName, getChatById } = useChatSettings();
 
-  const chat = chatsMap.get(registeredChatId!)!;
+  const chat = currentChat!;
 
   // usuwanie czatu
   const handleDeleteChat = async () => {
-    await deleteChat(chat.chatId);
-    await registerChat(null);
+    await deleteChat(chat.id);
+    await subscribe(null);
   };
 
   // aktualizowanie czatu
   const handleUpdateChat = async () => {
-    await updateChat(chat.chatId, updateValues.name, updateValues.photoURL);
+    await updateChat(chat.id, updateValues.name, updateValues.photoURL);
     toggleUpdateChatModalVisibility(false);
   };
 
@@ -86,7 +76,7 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
             <PeopleIcon /> Uczestnicy
           </Typography>
           {chat.participants.map((parti, index) => (
-            <ListSingleItem key={"list-item-" + index} user={parti} />
+            <ListSingleItem key={"list-item-" + index} user={parti!} />
           ))}
         </List>
 
@@ -111,7 +101,7 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
         primarytext="Czy na pewno chcesz usunąć ten czat?"
         buttons={[
           { label: "Cofnij", onClick: closeDeleteChatModal },
-          { label: "Usuń", color: "error", onClick: handleDeleteChat, disabled: deletingChat.isLoading },
+          { label: "Usuń", color: "error", onClick: handleDeleteChat, disabled: false },
         ]}
       />
 
@@ -122,7 +112,7 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
         primarytext="Zaktualizuj informacje czatu"
         buttons={[
           { label: "Anuluj", onClick: closeUpdateChatModal },
-          { label: "Zapisz", onClick: handleUpdateChat, disabled: updatingChat.isLoading },
+          { label: "Zapisz", onClick: handleUpdateChat, disabled: false },
         ]}
       >
         <TextField

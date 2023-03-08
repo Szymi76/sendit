@@ -14,7 +14,7 @@ export type SubscriptionProviderProps = { children: React.ReactNode };
  */
 export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) => {
   const { user, isLoading } = useAuth();
-  const { chats, subscribe, subscribeQueue, subscriptionInQueue, getChatById, updateStates } = useChat(
+  const { chats, subscribe, subscribeQueue, subscriptionInQueue, getChatById, updateStates, subscribingTo } = useChat(
     (state) => ({
       chats: state.chats,
       subscribe: state.subscribe,
@@ -22,10 +22,12 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
       subscriptionInQueue: state.subscriptionInQueue,
       getChatById: state.getChatById,
       updateStates: state.updateStates,
+      subscribingTo: state.subscribingTo,
     }),
     shallow,
   );
 
+  // zajmuję się kolekjowanie i subskrybowaniem czatu.
   useEffect(() => {
     if (isLoading || !user || !subscriptionInQueue) return;
 
@@ -36,6 +38,12 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     subscribeQueue(null);
     updateStates({ creatingChat: { isLoading: false, isError: false } });
   }, [chats, subscriptionInQueue]);
+
+  // zajmuje się aktualizowaniem wartości `currentChat`.
+  useEffect(() => {
+    const currentChat = subscribingTo ? getChatById(subscribingTo) : null;
+    useChat.setState({ currentChat });
+  }, [chats, subscribingTo]);
 
   return <SubscriptionContext.Provider value={null}>{children}</SubscriptionContext.Provider>;
 };

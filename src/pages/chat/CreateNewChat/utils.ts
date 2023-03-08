@@ -12,6 +12,6 @@ export const validateNameField = (name: string) => {
 
 // sprawdza czy lista uczestników nowego czatu jest okej
 export const validateParticipantsField = (participants: OptionItem[]) => {
-  if (participants.length < 2) return "Wymaganych jest co najmniej 2 uczestników";
+  if (participants.length < 1) return "Wymaganych jest co najmniej 1 uczestnik";
   else return null;
 };

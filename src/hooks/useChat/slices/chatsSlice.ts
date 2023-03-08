@@ -29,14 +29,12 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   //
-  subscribe: (id) => {
-    set({ subscribingTo: id });
-    if (id === null) set({ currentChat: null });
-    else {
-      const currentChat = get().getChatById(id);
-      set({ currentChat: currentChat });
-    }
-  },
+  fetchMoreMessages: false,
+  //
+  //
+  //
+  //
+  subscribe: (id) => set({ subscribingTo: id }),
   //
   //
   //
@@ -116,6 +114,8 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
     if (!chat) throw new Error("Can't delete not existing chat");
 
     await deleteDoc(refs.chats.doc(chatId));
+    get().subscribe(null);
+
     const messages = await getDocs(refs.messages.col(chatId));
 
     for (let i = 0; i < messages.docs.length; i++) {

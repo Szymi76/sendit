@@ -112,7 +112,7 @@ export const MessageBox = ({ message, currentUser }: MessageBoxProps) => {
   const isMy = author.uid == currentUser.uid;
 
   return (
-    <Box width="100%" display="flex" justifyContent={isMy ? "flex-end" : "flex-start"}>
+    <Box width="100%" display="flex" justifyContent={isMy ? "flex-end" : "flex-start"} p={5}>
       <Box display="flex" flexDirection={isMy ? "row-reverse" : "row"}>
         {/* awatar i czas wysłania wiadomości */}
         <Box display="flex" flexDirection="column" justifyContent="flex-end" alignItems="center">

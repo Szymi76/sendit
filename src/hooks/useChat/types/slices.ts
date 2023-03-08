@@ -18,7 +18,7 @@ export type UsersSlice = {
    * @param id id użytkownika
    * @description Dodaje / Usuwa użytkownika jako znajomego.
    */
-  toggleUserAsFriend: (id: string) => void;
+  toggleUserAsFriend: (id: string) => Promise<void>;
   /**
    * @param id id użytkownikam
    * @returns Zwraca użytkownika na podstawie `id`. Jeśli użytkownik nie istnieje zwraca `null`.
@@ -37,7 +37,7 @@ export type ChatsSlice = {
    */
   chats: Chat[];
   /**
-   * Aktualnie subskrybowany czat.
+   * Zwraca aktualnie subskrybowany czat.
    */
   currentChat: Chat | null;
   /**
@@ -100,7 +100,16 @@ export type ChatsSlice = {
    * @description Aktualizuje czat.
    */
   updateChat: (chatId: string, name?: string, photo?: string | File | null) => Promise<void>;
+  /**
+   *
+   * @param chatId id czatu
+   * @description Usuwa czat i wszystkie jego wiadomości.
+   */
   deleteChat: (chatId: string) => Promise<void>;
+  /**
+   * Powoduje pobranie większej ilości wiadomości
+   */
+  fetchMoreMessages: boolean;
 };
 
 export type State = { isLoading: boolean; isError: boolean };

@@ -15,6 +15,7 @@ export type User = {
 };
 
 export type Message = Omit<db_Message, "author"> & {
+  id: string;
   author: User | null;
 };
 

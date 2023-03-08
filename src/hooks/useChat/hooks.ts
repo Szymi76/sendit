@@ -31,7 +31,7 @@ export const useChatList = () => {
 };
 
 export const useChatSettings = () => {
-  const { currentChat, subscribe, subscribingTo, updateChat, deleteChat, getChatName } = useChat(
+  const { currentChat, subscribe, subscribingTo, updateChat, deleteChat, getChatName, getChatById } = useChat(
     (state) => ({
       currentChat: state.currentChat,
       subscribe: state.subscribe,
@@ -39,15 +39,16 @@ export const useChatSettings = () => {
       updateChat: state.updateChat,
       deleteChat: state.deleteChat,
       getChatName: state.getChatName,
+      getChatById: state.getChatById,
     }),
     shallow,
   );
 
-  return { currentChat, subscribe, subscribingTo, updateChat, deleteChat, getChatName };
+  return { currentChat, subscribe, subscribingTo, updateChat, deleteChat, getChatName, getChatById };
 };
 
 export const _useChat = () => {
-  const { currentChat, currentUser, sendMessage, subscribingTo, sendingMessage, chats } = useChat(
+  const { currentChat, currentUser, sendMessage, subscribingTo, sendingMessage, chats, getChatById } = useChat(
     (state) => ({
       currentChat: state.currentChat,
       currentUser: state.currentUser,
@@ -55,9 +56,10 @@ export const _useChat = () => {
       sendMessage: state.sendMessage,
       sendingMessage: state.sendingMessage,
       chats: state.chats,
+      getChatById: state.getChatById,
     }),
     shallow,
   );
 
-  return { currentChat, currentUser, sendMessage, subscribingTo, sendingMessage, chats };
+  return { currentChat, currentUser, sendMessage, subscribingTo, sendingMessage, chats, getChatById };
 };

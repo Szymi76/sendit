@@ -2,14 +2,16 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Fab, Input, Typography } from "@mui/material";
+import { Box, Fab, Input, List, Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RotatingLines } from "react-loader-spinner";
+import { Virtuoso } from "react-virtuoso";
 
+import useChat from "../../../hooks/useChat";
+import { _useChat } from "../../../hooks/useChat/hooks";
 import useToggle from "../../../hooks/useToggle";
-import { useChat } from "../../../providers/ChatProvider";
 import ChatSettings from "../ChatSettings";
 import {
   EmojiWrapper,
@@ -29,49 +31,33 @@ const Chat = () => {
   const [areSettingsVisible, toggleSettingsVisibility] = useToggle();
   const [files, setFiles] = useState<File[]>([]);
 
-  const chatRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = createRef<HTMLDivElement>();
 
-  const {
-    formatted: {
-      chats: [chatsArray, chatsMap],
-      user,
-    },
-    registeredChatId,
-    sendMessage,
-    status: { sendingMessage, fetchingRegisteredChat },
-  } = useChat();
+  const { currentChat, currentUser, sendMessage, sendingMessage, subscribingTo, chats, getChatById } = _useChat();
 
   // aktualnie zarejestrowany czat
-  const chat = useMemo(() => {
-    const currentChat = chatsMap.get(registeredChatId!);
-    return currentChat!;
-  }, [registeredChatId, chatsMap]);
+  const chat = currentChat!;
 
   // wysyałanie wiadomości
   const handleSendMessage = async () => {
     if (text.trim().length == 0 && files.length == 0) return;
-    await sendMessage(chat.chatId, { text, files });
+    await sendMessage(chat.id, text, files);
     setText("");
     setFiles([]);
   };
 
-  // skrolowanie czatu po wysłaniu i odebraniu wiadomości
   useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollBy(0, 1000);
-  }, [chatsArray, sendingMessage.isLoading]);
-
-  // skrolowanie czatu na sam dół po załadowaniu
-  useEffect(() => {
-    if (chatRef.current) chatRef.current.scrollBy(0, 9999);
-  }, [chatsArray, registeredChatId]);
+    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [currentChat]);
 
   // wiadomości jako tablica JSX.Element
   const messages = useMemo(() => {
-    return chat.messages.map((msg, i) => {
+    const elements = chat.messages.map((msg, i) => {
       const key = `${msg.createdAt.seconds}-${i}-${msg.text.slice(0, 5)}`;
-      return <MessageBox key={key} currentUser={user!} message={msg} />;
+      return <MessageBox key={key} currentUser={currentUser!} message={msg} />;
     });
-  }, [chatsArray, registeredChatId]);
+    return elements;
+  }, [currentChat]);
 
   // dodawanie plików
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,13 +74,18 @@ const Chat = () => {
   // dodawanie emotek do tekstu
   const handleEmojiClick = (emojiData: EmojiClickData) => setText(text + emojiData.emoji);
 
+  //@ts-ignore
+  const followOutput = useCallback((isAtBottom) => {
+    return isAtBottom ? "smooth" : false;
+  }, []);
+
   return (
     <Wrapper>
-      <Header chat={chat} currentUserUid={user!.uid}>
+      <Header chat={chat} currentUserUid={currentUser!.uid}>
         <Fab variant="transparent" onClick={toggleSettingsVisibility}>
           <SettingsIcon />
         </Fab>
-        {fetchingRegisteredChat.isLoading && (
+        {false && (
           <Box width="100%" position="absolute" display="flex" justifyContent="center" bottom={-100}>
             <RotatingLines width="36" strokeColor="#4f46e5" />
           </Box>
@@ -102,9 +93,23 @@ const Chat = () => {
       </Header>
 
       {/* wiadomości */}
-      <MessagesWrapper ref={chatRef} p={3}>
+      <MessagesWrapper>
         <GrayText>Napisz coś aby rozpocząć rozmowę</GrayText>
-        {messages}
+        {/* {messages} */}
+        <Virtuoso
+          style={{
+            width: "100%",
+            overflowX: "hidden",
+          }}
+          data={chat.messages}
+          startReached={() => useChat.setState({ fetchMoreMessages: true })}
+          overscan={200}
+          itemContent={(index, msg) => <MessageBox message={msg} currentUser={currentUser!} />}
+          initialTopMostItemIndex={chat.messages.length - 1}
+          firstItemIndex={Math.max(0, 500 - messages.length)}
+          followOutput={followOutput}
+        />
+        <Box ref={messagesEndRef} />
         {sendingMessage.isLoading && (
           <Box display="flex" justifyContent="flex-end" m={3}>
             <RotatingLines width="30" strokeColor="#4f46e5" />

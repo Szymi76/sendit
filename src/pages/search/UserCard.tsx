@@ -4,21 +4,19 @@ import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import { Box, styled, Typography } from "@mui/material";
 import React from "react";
 
-import { User } from "../../firebase/types";
-import { useChat } from "../../providers/ChatProvider";
+import { AvatarV2 } from "../../components/components";
+import useChat from "../../hooks/useChat";
+import { User } from "../../hooks/useChat/types/client";
 import * as Content from "./Content";
 
 type UserCardProps = { user: User };
 
 const UserCard = ({ user }: UserCardProps) => {
-  const { currentUser, addFriend, removeFriend } = useChat();
+  const { currentUser, toggleUserAsFriend } = useChat();
 
-  const isUserFriend = currentUser?.val?.friends.includes(user.uid);
+  const isUserFriend = currentUser!.friends.includes(user.uid);
   const FriendIcon = isUserFriend ? <PersonRemoveIcon color="error" /> : <PersonAddIcon color="success" />;
-  const onClick = async () => {
-    if (isUserFriend) await removeFriend(user.uid);
-    else await addFriend(user.uid);
-  };
+  const onClick = async () => await toggleUserAsFriend(user.uid);
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => {
     return (
@@ -42,12 +40,7 @@ const UserCard = ({ user }: UserCardProps) => {
   return (
     <Wrapper>
       <Box display="flex" gap="16px">
-        <img
-          src={user.photoURL}
-          height="90%"
-          alt="Zdjęcie profilowe użytkownika"
-          style={{ borderRadius: 9999, maxHeight: 50 }}
-        />
+        <AvatarV2 name={user.displayName} src={user.photoURL} />
         <Box display="flex" flexDirection="column">
           <Typography variant="h6">{user.displayName}</Typography>
           <Typography variant="caption">{user.email}</Typography>
