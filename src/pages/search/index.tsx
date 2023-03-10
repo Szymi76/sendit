@@ -11,7 +11,7 @@ import UserCard from "./UserCard";
 const Search = () => {
   const [query, setQuery] = useState("");
   const { user, isLoading } = useAuth();
-  const { data: users } = useGetDocumentsWithQuery<User>("users", where("displayName", "!=", null));
+  const { data: users } = useGetDocumentsWithQuery<User>("users", where("displayName", "!=", user!.displayName));
 
   const options = useMemo(() => users.map((u) => u.displayName), [users]);
 

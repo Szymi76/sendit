@@ -5,6 +5,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 
 import App from "./App";
+import { AuthProvider } from "./firebase/hooks/useAuth";
 import { ChatsProvider } from "./hooks/useChat/providers/ChatsProvider";
 import { CurrentUserProvider } from "./hooks/useChat/providers/CurrentUserProvider";
 import { FriendsProvider } from "./hooks/useChat/providers/FriendsProvider";
@@ -15,17 +16,19 @@ import theme from "./mui/theme";
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <CurrentUserProvider>
-        <FriendsProvider>
-          <ChatsProvider>
-            <MessagesProvider>
-              <SubscriptionProvider>
-                <App />
-              </SubscriptionProvider>
-            </MessagesProvider>
-          </ChatsProvider>
-        </FriendsProvider>
-      </CurrentUserProvider>
+      <AuthProvider>
+        <CurrentUserProvider>
+          <FriendsProvider>
+            <ChatsProvider>
+              <MessagesProvider>
+                <SubscriptionProvider>
+                  <App />
+                </SubscriptionProvider>
+              </MessagesProvider>
+            </ChatsProvider>
+          </FriendsProvider>
+        </CurrentUserProvider>
+      </AuthProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );

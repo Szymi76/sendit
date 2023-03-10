@@ -1,11 +1,15 @@
 import { onAuthStateChanged } from "firebase/auth";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 import { auth as firebaseAuth } from "..";
 
 type Auth = { user: typeof firebaseAuth.currentUser | null; isLoading: boolean };
 
-const useAuth = () => {
+export const AuthContext = createContext<Auth | null>(null);
+
+export type AuthProviderProps = { children: React.ReactNode };
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [auth, setAuth] = useState<Auth>({ user: null, isLoading: true });
 
   useEffect(() => {
@@ -14,9 +18,12 @@ const useAuth = () => {
     });
   }, []);
 
-  const test = auth;
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+};
 
-  return auth;
+const useAuth = () => {
+  const context = useContext(AuthContext)!;
+  return context;
 };
 
 export default useAuth;

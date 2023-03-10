@@ -5,20 +5,17 @@ import { Box, Button, Fab, List, Typography } from "@mui/material";
 
 import { AvatarV2 } from "../../../components/components";
 import useChat from "../../../hooks/useChat";
-import { useChatSettings } from "../../../hooks/useChat/hooks";
 import useToggle from "../../../hooks/useToggle";
 import { Content, Footer, Header, ListSingleItem, Wrapper } from "./components";
 import { DeleteChatModal, ManageChatUsersModal, UpdateChatModal } from "./Modals";
 
 type ChatSettingsProps = { areSettingsVisible: boolean; toggleSettingsVisibility: (to?: unknown) => void };
-
 const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSettingsProps) => {
   const [isDeleteChatModalVisible, toggleDeleteChatModalVisibility] = useToggle();
   const [isUpdateChatModalVisible, toggleUpdateChatModalVisibility] = useToggle();
   const [isManageUsersModalVisible, toggleManageUsersModalVisibility] = useToggle();
-  const { currentChat, subscribe, subscribingTo, updateChat, deleteChat, getChatName, getChatById } = useChatSettings();
-
-  const chat = currentChat!;
+  const currentChat = useChat((state) => state.currentChat)!;
+  const getChatName = useChat((state) => state.getChatName);
 
   return (
     <Wrapper maxWidth={areSettingsVisible ? "90%" : "0px"}>
@@ -30,16 +27,16 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
       </Header>
       <Content>
         {/* zdjęcie czatu */}
-        <AvatarV2 name={chat.name} src={chat.photoURL} sx={{ height: 175, width: 175 }} />
+        <AvatarV2 name={currentChat.name} src={currentChat.photoURL} sx={{ height: 175, width: 175 }} />
 
         {/* nazwa czatu */}
         <Typography variant="h4" fontWeight={500}>
-          {getChatName(chat)}
+          {getChatName(currentChat)}
         </Typography>
 
         {/* rodzaj czatu */}
         <Typography display="flex" alignItems="center" gap={1} color="gray">
-          <ChatIcon /> Rodzaj czatu - {chat.type == "group" ? "grupowy" : "indywidualny"}
+          <ChatIcon /> Rodzaj czatu - {currentChat.type == "group" ? "grupowy" : "indywidualny"}
         </Typography>
 
         {/* lista uczestników */}
@@ -47,7 +44,7 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
           <Typography display="flex" alignItems="center" gap={1} ml={3} color="gray">
             <PeopleIcon /> Uczestnicy
           </Typography>
-          {chat.participants.map((parti, index) => (
+          {currentChat.participants.map((parti, index) => (
             <ListSingleItem key={"list-item-" + index} user={parti!} />
           ))}
         </List>
@@ -58,12 +55,12 @@ const ChatSettings = ({ areSettingsVisible, toggleSettingsVisibility }: ChatSett
             <Button variant="contained" onClick={() => toggleUpdateChatModalVisibility(true)}>
               Zaktualizuj czat
             </Button>
-            {chat.type == "group" && (
+            {currentChat.type == "group" && (
               <Button variant="contained" color="error" onClick={() => toggleDeleteChatModalVisibility(true)}>
                 Usuń czat
               </Button>
             )}
-            {chat.type == "group" && (
+            {currentChat.type == "group" && (
               <Button variant="contained" color="info" onClick={() => toggleManageUsersModalVisibility(true)}>
                 Zarządzaj użytkownikami
               </Button>

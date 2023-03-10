@@ -21,7 +21,7 @@ import { User } from "../../../firebase/types";
 */
 
 export const Wrapper = styled(Box)(({ theme }) => ({
-  position: "absolute",
+  position: "fixed",
   top: 0,
   right: 0,
   [theme.breakpoints.down("md")]: {
@@ -39,6 +39,7 @@ export const Wrapper = styled(Box)(({ theme }) => ({
   overflow: "hidden",
   display: "flex",
   flexDirection: "column",
+  animation: "",
 }));
 
 /* 
@@ -92,7 +93,7 @@ export const ListSingleItem = ({ user }: ListSingleItemProps) => {
 
 export const Footer = styled(Box)(({ theme }) => ({
   display: "flex",
-  alignItems: "flex-end",
+  alignItems: "center",
   justifyContent: "center",
   gap: theme.spacing(1),
   padding: theme.spacing(2),

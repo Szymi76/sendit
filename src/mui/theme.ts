@@ -75,6 +75,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiModal: {
+      styleOverrides: {
+        root: {
+          zIndex: 3000,
+        },
+      },
+    },
   },
 });
 
