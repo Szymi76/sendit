@@ -25,8 +25,10 @@ export const Wrapper = styled(Box)(({ theme }) => ({
 export type HeaderProps = { children: React.ReactNode; chat: Chat; currentUserUid: string };
 
 export const Header = ({ children, chat, currentUserUid }: HeaderProps) => {
-  const participantsWithoutMe = chat.participants.filter((p) => p!.uid != currentUserUid);
-  const name = chat.type == "group" ? chat.name : participantsWithoutMe[0]!.displayName!;
+  const participantsWithoutMe = chat.participants.filter((p) => p && p.uid != currentUserUid);
+  let name = chat.name;
+  if (chat.type == "individual" && participantsWithoutMe.length == 1 && participantsWithoutMe[0])
+    name = participantsWithoutMe[0].displayName;
 
   return (
     <Box
@@ -138,6 +140,7 @@ export const MessageBox = ({ message, currentUser }: MessageBoxProps) => {
             <Typography
               variant="body1"
               sx={{
+                wordWrap: "break-word",
                 color: (theme) => {
                   return isMy ? theme.palette.common.white : theme.palette.common.black;
                 },

@@ -14,6 +14,14 @@ const theme = createTheme({
     primary: {
       main: "#4f46e5",
     },
+    success: {
+      main: "#16a34a",
+      light: "#86efac",
+    },
+    error: {
+      main: "#ef4444",
+      light: "#fca5a5",
+    },
     background: {
       default: "#f8fafc",
     },

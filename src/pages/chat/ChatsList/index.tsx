@@ -35,7 +35,7 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
     return filteredChats.map((chat) => (
       <SingleListItem key={chat.id} chat={chat} onClick={() => handleListItemClick(chat.id)} />
     ));
-  }, [filterChats, chats]);
+  }, [query, chats]);
 
   // lista znalezionych czatów lub tekst z informacją o braku wyników
   const chatslistOrNotFound =

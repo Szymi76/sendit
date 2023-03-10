@@ -31,9 +31,7 @@ const Chat = () => {
   const [areSettingsVisible, toggleSettingsVisibility] = useToggle();
   const [files, setFiles] = useState<File[]>([]);
 
-  const messagesEndRef = createRef<HTMLDivElement>();
-
-  const { currentChat, currentUser, sendMessage, sendingMessage, subscribingTo, chats, getChatById } = _useChat();
+  const { currentChat, currentUser, sendMessage, sendingMessage } = _useChat();
 
   // aktualnie zarejestrowany czat
   const chat = currentChat!;
@@ -45,10 +43,6 @@ const Chat = () => {
     setText("");
     setFiles([]);
   };
-
-  useEffect(() => {
-    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [currentChat]);
 
   // wiadomości jako tablica JSX.Element
   const messages = useMemo(() => {
@@ -74,11 +68,6 @@ const Chat = () => {
   // dodawanie emotek do tekstu
   const handleEmojiClick = (emojiData: EmojiClickData) => setText(text + emojiData.emoji);
 
-  //@ts-ignore
-  const followOutput = useCallback((isAtBottom) => {
-    return isAtBottom ? "smooth" : false;
-  }, []);
-
   return (
     <Wrapper>
       <Header chat={chat} currentUserUid={currentUser!.uid}>
@@ -94,22 +83,18 @@ const Chat = () => {
 
       {/* wiadomości */}
       <MessagesWrapper>
-        <GrayText>Napisz coś aby rozpocząć rozmowę</GrayText>
+        {messages.length == 0 && <GrayText mt={3}>Napisz coś aby rozpocząć rozmowę</GrayText>}
         {/* {messages} */}
         <Virtuoso
-          style={{
-            width: "100%",
-            overflowX: "hidden",
-          }}
+          style={{ width: "100%", overflowX: "hidden" }}
           data={chat.messages}
           startReached={() => useChat.setState({ fetchMoreMessages: true })}
           overscan={200}
           itemContent={(index, msg) => <MessageBox message={msg} currentUser={currentUser!} />}
           initialTopMostItemIndex={chat.messages.length - 1}
           firstItemIndex={Math.max(0, 500 - messages.length)}
-          followOutput={followOutput}
+          followOutput={(isAtBottom) => (isAtBottom ? "smooth" : false)}
         />
-        <Box ref={messagesEndRef} />
         {sendingMessage.isLoading && (
           <Box display="flex" justifyContent="flex-end" m={3}>
             <RotatingLines width="30" strokeColor="#4f46e5" />

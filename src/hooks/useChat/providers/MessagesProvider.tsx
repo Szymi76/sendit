@@ -33,7 +33,7 @@ export const MessagesProvider = ({ children }: MessagesProviderProps) => {
   useEffect(() => {
     if (isLoading || !user || !subscribingTo) return;
 
-    const newLimit = createMessagesLimit(subscribingTo, 1, 10, fetchMoreMessages);
+    const newLimit = createMessagesLimit(subscribingTo, 10, 10, fetchMoreMessages);
 
     const q = query(refs.messages.col(subscribingTo), orderBy("createdAt", "desc"), limit(newLimit));
 

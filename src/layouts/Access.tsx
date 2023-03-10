@@ -48,3 +48,25 @@ export const All = () => {
     </>
   );
 };
+
+export const Authenticated_V2 = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
+  const from = location.pathname;
+
+  if (isLoading)
+    return (
+      <>
+        <Nav />
+        <Loading />
+      </>
+    );
+  else if (user)
+    return (
+      <Box pt="44px" minHeight="100vh" bgcolor={(theme) => theme.palette.background.default}>
+        <Nav />
+        {children}
+      </Box>
+    );
+  else return <Navigate to="/zaloguj-sie" state={{ from }} />;
+};

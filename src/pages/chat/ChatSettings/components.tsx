@@ -92,9 +92,10 @@ export const ListSingleItem = ({ user }: ListSingleItemProps) => {
 
 export const Footer = styled(Box)(({ theme }) => ({
   display: "flex",
-  alignItems: "center",
+  alignItems: "flex-end",
   justifyContent: "center",
   gap: theme.spacing(1),
   padding: theme.spacing(2),
   flex: 1,
+  flexWrap: "wrap",
 }));

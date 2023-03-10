@@ -17,11 +17,12 @@ type Status = { isLoading: boolean; isSuccess: boolean };
 
 const initialStatus: Status = { isLoading: false, isSuccess: false };
 
-const useGetDocumentsWithQuery = <T>(path: string, whereFilter: QueryFieldFilterConstraint) => {
+const useGetDocumentsWithQuery = <T>(path: string, whereFilter: QueryFieldFilterConstraint, deps: any[] = []) => {
   const [status, setStatus] = useState<Status>(initialStatus);
   const [data, setData] = useState<T[]>([]);
 
   useEffect(() => {
+    // console.log(status.isSuccess);
     const fetchDocument = async () => {
       try {
         const ref = collection(firestore, path) as CollectionReference<T>;
@@ -39,8 +40,8 @@ const useGetDocumentsWithQuery = <T>(path: string, whereFilter: QueryFieldFilter
       }
     };
 
-    fetchDocument();
-  }, []);
+    !status.isSuccess && fetchDocument();
+  }, [deps]);
 
   const { isLoading, isSuccess } = status;
   return { data, isLoading, isSuccess } as const;

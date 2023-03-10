@@ -1,4 +1,4 @@
-import { arrayRemove, arrayUnion, getDoc, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import produce from "immer";
 import { StateCreator } from "zustand";
 
@@ -31,6 +31,8 @@ export const usersSlice: StateCreator<UseChatType, [], [], UsersSlice> = (set, g
     const currentUser = get().currentUser;
     if (!currentUser) throw new Error(commonError);
 
+    if (currentUser.uid == id) throw new Error("Can't add yourself as friend");
+
     const currentUserRef = refs.users.doc(currentUser.uid);
     const otherUserRef = refs.users.doc(id);
 
@@ -45,6 +47,16 @@ export const usersSlice: StateCreator<UseChatType, [], [], UsersSlice> = (set, g
     } else {
       await updateDoc(currentUserRef, { friends: arrayRemove(id) });
       await updateDoc(otherUserRef, { friends: arrayRemove(currentUser.uid) });
+    }
+
+    const alreadyExisitngIndividualChatRef = query(
+      refs.chats.col,
+      where("type", "==", "individual"),
+      where("participantsIdsAsString", "==", [currentUser.uid, id].join(",")),
+    );
+    const alreadyExisitngIndividualChatAsArray = await getDocs(alreadyExisitngIndividualChatRef);
+    if (alreadyExisitngIndividualChatAsArray.docs.length == 0 && !isFriend) {
+      await get().createChat([currentUser.uid, id], "individual", otherUser.data().displayName);
     }
   },
   //
@@ -74,6 +86,14 @@ export const usersSlice: StateCreator<UseChatType, [], [], UsersSlice> = (set, g
     if (chat.type == "group") return chat.name;
 
     const otherUser = chat.participants.filter((parti) => parti?.uid != get().currentUser?.uid)[0];
-    return otherUser!.displayName;
+    return otherUser ? otherUser.displayName : chat.name;
+  },
+  //
+  //
+  //
+  //
+  changeChatParticipants: async (chatId, newParticipantsIds) => {
+    const participants = newParticipantsIds.map((id) => refs.users.doc(id));
+    await updateDoc(refs.chats.doc(chatId), { participants });
   },
 });

@@ -29,6 +29,13 @@ export type UsersSlice = {
    * @returns Zwraca nazwę czatu na podstawie tego czy czat jest indywidualny lub grupowy.
    */
   getChatName: (chat: Chat) => string;
+  /**
+   *
+   * @param chatId id czatu
+   * @param newParticipantsIds nowa tablica id użytkowników
+   * @description Zmienia uczestników czatu.
+   */
+  changeChatParticipants: (chatId: string, newParticipantsIds: string[]) => Promise<void>;
 };
 
 export type ChatsSlice = {
@@ -133,5 +140,4 @@ export type StatesSlice = {
   updateStates: (statesToUpdate: Partial<StatesSlice>) => void;
 };
 
-// export type useChatType = UsersSlice & ChatsSlice & StatesSlice;
 export type UseChatType = UsersSlice & ChatsSlice & StatesSlice;

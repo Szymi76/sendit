@@ -56,6 +56,7 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   createChat: async (ids, type, name, photo) => {
     const newChat: db_Chat = {
       participants: ids.map((uid) => refs.users.doc(uid)),
+      participantsIdsAsString: ids.join(","),
       type,
       name,
       photoURL: null,

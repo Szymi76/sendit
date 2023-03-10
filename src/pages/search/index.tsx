@@ -2,15 +2,16 @@ import { Autocomplete, Box, TextField } from "@mui/material";
 import { where } from "firebase/firestore";
 import React, { useMemo, useState } from "react";
 
-import { User } from "../../firebase/types";
 import useAuth from "../../firebase/hooks/useAuth";
 import useGetDocumentsWithQuery from "../../firebase/hooks/useGetDocuments";
+import { User } from "../../firebase/types";
+import useChat from "../../hooks/useChat";
 import UserCard from "./UserCard";
 
 const Search = () => {
-  const { user } = useAuth();
   const [query, setQuery] = useState("");
-  const { data: users, isLoading } = useGetDocumentsWithQuery<User>("users", where("displayName", "!=", null));
+  const { user, isLoading } = useAuth();
+  const { data: users } = useGetDocumentsWithQuery<User>("users", where("displayName", "!=", null));
 
   const options = useMemo(() => users.map((u) => u.displayName), [users]);
 

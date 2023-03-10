@@ -18,6 +18,7 @@ export type db_Message = {
 
 export type db_Chat = {
   participants: DocumentReference<User>[];
+  participantsIdsAsString: string;
   photoURL: string | null;
   name: string;
   type: ChatType;
