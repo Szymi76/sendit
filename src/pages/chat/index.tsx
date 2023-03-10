@@ -10,6 +10,7 @@ import useToggle from "../../hooks/useToggle";
 import Chat from "./Chat";
 import ChatsList from "./ChatsList";
 import CreateNewChat from "./CreateNewChat";
+import Default from "./Default";
 
 const ChatV3 = () => {
   const [isCreateNewChatVisible, toggleCreateNewChatVisibility] = useToggle();
@@ -17,7 +18,7 @@ const ChatV3 = () => {
 
   const createNewChat = isCreateNewChatVisible && <CreateNewChat toggleVisibility={toggleCreateNewChatVisibility} />;
   const chat = currentChat && !isCreateNewChatVisible && <Chat />;
-  const defaultPage = !isCreateNewChatVisible && !currentChat && <h1>Sendit</h1>;
+  const defaultPage = !isCreateNewChatVisible && !currentChat && <Default />;
 
   return (
     <CurrentUserProvider>

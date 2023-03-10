@@ -13,6 +13,7 @@ import {
   SxProps,
   TextField,
   Theme,
+  Tooltip,
 } from "@mui/material";
 import { RotatingLines } from "react-loader-spinner";
 
@@ -65,16 +66,18 @@ export type HeaderProps = { toggleListVisibility: () => void; toggleCreateNewCha
 export const Header = ({ toggleListVisibility, toggleCreateNewChatVisibility }: HeaderProps) => {
   return (
     <Box display="flex" justifyContent="space-between" alignItems="center" px={2}>
-      <Fab variant="transparent" size="small">
-        <WestIcon sx={iconSx} onClick={toggleListVisibility} />
-      </Fab>
+      <Tooltip title="Ukryj listę">
+        <Fab variant="transparent" size="small">
+          <WestIcon sx={iconSx} onClick={toggleListVisibility} />
+        </Fab>
+      </Tooltip>
       <Box display="flex" alignItems="center" gap={1}>
         <Fab variant="transparent" size="small">
           <AddCircleIcon sx={iconSx} onClick={toggleCreateNewChatVisibility} />
         </Fab>
-        <Fab variant="transparent" size="small">
+        {/* <Fab variant="transparent" size="small">
           <MoreVertIcon sx={iconSx} />
-        </Fab>
+        </Fab> */}
       </Box>
     </Box>
   );
@@ -98,13 +101,13 @@ export const SearchInput = styled(TextField)(({ theme }) => ({
     Wrapper dla ikon pod polem tekstowym
 */
 
-export const ActionsWrapper = styled(Box)({
+export const ActionsWrapper = styled(Box)(({ theme }) => ({
   display: "flex",
   justifyContent: "flex-start",
   alignItems: "center",
-  padding: "0 16px",
-  gap: "16px",
-});
+  padding: `0 ${theme.spacing(2)}`,
+  gap: theme.spacing(1),
+}));
 
 /*
     Kontener ze strzałką do pokazania listy

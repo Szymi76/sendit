@@ -18,25 +18,26 @@ import { UpdateValuesTypes } from "./utils";
 
 export type ModalProps = { open: boolean; changeVisibility: (to: unknown) => void };
 
-// modal do aktualizacji informacji chatu
+// MODAL DO AKTUALIZACJI NAZWY I ZDJĘCIA CZATU
 export const UpdateChatModal = ({ open, changeVisibility }: ModalProps) => {
   const [updateValues, setUpdateValues] = useState<UpdateValuesTypes>({ name: "", photoURL: null });
 
   const chat = useChat((state) => state.currentChat)!;
   const updateChat = useChat((state) => state.updateChat);
 
-  // aktualizowanie czatu
+  // AKTUALIZOWANIE CZATU
   const handleUpdateChat = async () => {
     await updateChat(chat!.id, updateValues.name, updateValues.photoURL);
     changeVisibility(false);
   };
 
-  // onChange na zmianę zdjęcia chatu do aktualizacji
+  // 'onChange' DLA NOWEGO ZDJĘCIA CZATU
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     setUpdateValues({ ...updateValues, photoURL: files ? files[0] : null });
   };
 
+  // DOMYŚLNE USTAWIANIE AKTUALNYCH DANYCH
   useEffect(() => {
     setUpdateValues({ name: chat.name, photoURL: chat.photoURL });
   }, [chat]);
@@ -71,12 +72,12 @@ export const UpdateChatModal = ({ open, changeVisibility }: ModalProps) => {
   );
 };
 
-// modal do usuwania czatu
+// MODAL DO USUWANIA CZATU
 export const DeleteChatModal = ({ open, changeVisibility }: ModalProps) => {
   const chat = useChat((state) => state.currentChat)!;
   const deleteChat = useChat((state) => state.deleteChat);
 
-  // usuwanie czatu
+  // USUWANIE CZATU
   const handleDeleteChat = async () => {
     await deleteChat(chat.id);
     changeVisibility(false);
@@ -95,23 +96,26 @@ export const DeleteChatModal = ({ open, changeVisibility }: ModalProps) => {
   );
 };
 
+// MODAL DO ZARZĄDZANIA UCZESTNIKAMI CZATU
 export const ManageChatUsersModal = ({ open, changeVisibility }: ModalProps) => {
   const [users, setUsers] = useState<string[]>([]);
   const chat = useChat((state) => state.currentChat)!;
   const friends = useChat((state) => state.friends);
   const changeChatParticipants = useChat((state) => state.changeChatParticipants);
 
-  // zmiana uczestników
+  // ZMIANA UCZESTNIKÓW CZATU
   const handleChangeParticipants = async () => {
     await changeChatParticipants(chat.id, users);
     changeVisibility(false);
   };
 
-  const handleToggleParti = (id: string) => {
+  // ZMIENIANIE UCZESTNICTWA UŻYTKOWNIKA
+  const handleToggleUser = (id: string) => {
     const isIn = users.includes(id);
     setUsers(isIn ? users.filter((str) => str != id) : [...users, id]);
   };
 
+  // WSZYSCY UŻYTKOWNICY, KTÓRZY POJAWIĄ SIĘ W LIŚCIE (participants + firends)
   const allPossibleUsers: User[] = useMemo(() => {
     // @ts-ignore
     const all: User[] = [...chat.participants, ...friends];
@@ -119,6 +123,7 @@ export const ManageChatUsersModal = ({ open, changeVisibility }: ModalProps) => 
     return ids.map((id) => all.find((user) => user.uid == id)!);
   }, [chat, friends]);
 
+  // DOMYŚLNIE ZAZNACZENI UCZESTNICY
   const defaultCheckedUsers = useMemo(() => {
     const ids = chat.participants.map((p) => (p ? p.uid : null)!).filter((id) => id != null);
     const selectedUsers = allPossibleUsers.filter((user) => ids.includes(user.uid));
@@ -126,12 +131,14 @@ export const ManageChatUsersModal = ({ open, changeVisibility }: ModalProps) => 
     return { users: selectedUsers, ids: selectedIds };
   }, [allPossibleUsers]);
 
+  // LICZBY OSÓB KTÓRE ZOSTANĄ dodane / usunięte
   const numberOfUsers = useMemo(() => {
     const toAdd = users.filter((id) => !defaultCheckedUsers.ids.includes(id)).length;
     const toRemove = defaultCheckedUsers.ids.filter((id) => !users.includes(id)).length;
     return { toAdd, toRemove };
   }, [allPossibleUsers, users]);
 
+  // DOMYŚLNE USTAWIANIE ZAZNACZONYCH UŻYTKOWNIKÓW
   useEffect(() => {
     setUsers(defaultCheckedUsers.ids);
   }, []);
@@ -154,7 +161,7 @@ export const ManageChatUsersModal = ({ open, changeVisibility }: ModalProps) => 
             <ListItem
               key={user.uid}
               secondaryAction={
-                <Checkbox edge="end" onChange={() => handleToggleParti(user.uid)} checked={users.includes(user.uid)} />
+                <Checkbox edge="end" onChange={() => handleToggleUser(user.uid)} checked={users.includes(user.uid)} />
               }
               disablePadding
             >

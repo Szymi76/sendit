@@ -1,23 +1,25 @@
+import GroupsIcon from "@mui/icons-material/Groups";
 import HistoryIcon from "@mui/icons-material/History";
-import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import PersonIcon from "@mui/icons-material/Person";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, List, Typography } from "@mui/material";
+import { Box, Fab, List, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
 
 import { useChatList } from "../../../hooks/useChat/hooks";
+import { ChatType } from "../../../hooks/useChat/types/other";
 import useToggle from "../../../hooks/useToggle";
 import { ActionsWrapper, Header, HiddenList, Loading, SearchInput, SingleListItem, Wrapper } from "./components";
-import { filterChats } from "./utils";
+import { Filter, filterChats } from "./utils";
 
 type ChatListProps = { toggleCreateNewChatVisibility: (to: unknown) => void };
-
 const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
   const { currentUser, chats, subscribe, fetchingChats } = useChatList();
   const [isListVisible, toggleListVisibility] = useToggle(true);
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("recent");
 
   // przefiltrowany chat
-  const filteredChats = useMemo(() => filterChats(chats, query), [chats, query]);
+  const filteredChats = useMemo(() => filterChats(chats, query, filter), [chats, query, filter]);
 
   // rejestrowanie chatu na podstawie id
   const handleListItemClick = async (id: string) => {
@@ -35,7 +37,7 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
     return filteredChats.map((chat) => (
       <SingleListItem key={chat.id} chat={chat} onClick={() => handleListItemClick(chat.id)} />
     ));
-  }, [query, chats]);
+  }, [query, chats, filter]);
 
   // lista znalezionych czatów lub tekst z informacją o braku wyników
   const chatslistOrNotFound =
@@ -71,8 +73,15 @@ const ChatList = ({ toggleCreateNewChatVisibility }: ChatListProps) => {
 
           {/* przyciski pod polem tekstowym */}
           <ActionsWrapper>
-            <HistoryIcon />
-            <PeopleOutlineIcon />
+            <Fab variant="transparent" color="secondary" size="small" onClick={() => setFilter("recent")}>
+              <HistoryIcon />
+            </Fab>
+            <Fab variant="transparent" color="secondary" size="small" onClick={() => setFilter("individual")}>
+              <PersonIcon />
+            </Fab>
+            <Fab variant="transparent" color="secondary" size="small" onClick={() => setFilter("group")}>
+              <GroupsIcon />
+            </Fab>
           </ActionsWrapper>
 
           {/* informacja o ładowaniu lub pokazanie listy czatów */}
