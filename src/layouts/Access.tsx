@@ -18,13 +18,14 @@ export const Authenticated = () => {
         <Loading />
       </>
     );
-  else if (user)
-    return (
-      <Box pt="44px" minHeight="100vh" bgcolor={(theme) => theme.palette.background.default}>
-        <Nav />
-        <Outlet />
-      </Box>
-    );
+  else if (user) return <Outlet />;
+  // else if (user)
+  //   return (
+  //     <Box pt="44px" minHeight="100vh" bgcolor={(theme) => theme.palette.background.default}>
+  //       <Nav />
+  //       <Outlet />
+  //     </Box>
+  //   );
   else return <Navigate to="/zaloguj-sie" state={{ from }} />;
 };
 

@@ -1,4 +1,4 @@
-import { onSnapshot, query, where } from "firebase/firestore";
+import { getDocs, limit, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { createContext, useEffect } from "react";
 
 import { firestore } from "../../../firebase";
@@ -6,7 +6,7 @@ import useAuth from "../../../firebase/hooks/useAuth";
 import useChat from "../index";
 import { Chat } from "../types/client";
 import { compareChatAndReplace } from "../utils/compare";
-import { convertChat } from "../utils/converters";
+import { convertChat, convertMessage } from "../utils/converters";
 import refs from "../utils/refs";
 
 export const ChatContext = createContext(null);
@@ -40,6 +40,17 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
 
         const convertedChat = await convertChat(chat, chatId);
         const comparedChat = compareChatAndReplace(convertedChat);
+
+        // pobieranie ostatniej wiadomości czatu
+        const messagesRef = refs.messages.col(chatId);
+        const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
+        const lastMessageAsArr = await (await getDocs(q)).docs;
+        const lastMessage = lastMessageAsArr.length > 0 && lastMessageAsArr[0].data() ? lastMessageAsArr[0] : null;
+
+        if (lastMessage) {
+          const convertedMessage = await convertMessage(lastMessage.data(), lastMessage.id);
+          useChat.getState().mergeMessages(chatId, convertedMessage);
+        }
 
         chats.push(comparedChat);
       }

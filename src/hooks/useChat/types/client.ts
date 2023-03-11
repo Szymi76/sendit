@@ -22,5 +22,4 @@ export type Message = Omit<db_Message, "author"> & {
 export type Chat = Omit<db_Chat, "participants" | "messages"> & {
   id: string;
   participants: (User | null)[];
-  messages: Message[];
 };

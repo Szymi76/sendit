@@ -20,11 +20,11 @@ export type MessagesProviderProps = { children: React.ReactNode };
 export const MessagesProvider = ({ children }: MessagesProviderProps) => {
   const { user, isLoading } = useAuth();
 
-  const { subscribingTo, addMessagesToChatWithId, getChatById, fetchMoreMessages } = useChat(
+  const { subscribingTo, getChatById, fetchMoreMessages } = useChat(
     (state) => ({
       subscribingTo: state.subscribingTo,
       getChatById: state.getChatById,
-      addMessagesToChatWithId: state.addMessagesToChatWithId,
+      // addMessagesToChatWithId: state.addMessagesToChatWithId,
       fetchMoreMessages: state.fetchMoreMessages,
     }),
     shallow,
@@ -45,7 +45,7 @@ export const MessagesProvider = ({ children }: MessagesProviderProps) => {
       const messagesFromDb = snapshot.docs;
       const messagesPromises = messagesFromDb.map((doc) => convertMessage(doc.data(), doc.id));
       const messages = await Promise.all(messagesPromises);
-      addMessagesToChatWithId(chat.id, messages.reverse());
+      useChat.getState().mergeMessages(chat.id, ...messages);
       useChat.setState({ fetchMoreMessages: false });
     });
 

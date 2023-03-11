@@ -4,6 +4,7 @@ import produce from "immer";
 import { StateCreator } from "zustand";
 
 import uploadFile from "../../../firebase/utils/uploadFile";
+import { Message } from "../types/client";
 import { db_Chat, db_Message } from "../types/database";
 import { ChatsSlice, UseChatType } from "../types/slices";
 import refs from "../utils/refs";
@@ -165,12 +166,44 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   //
-  addMessagesToChatWithId: (chatId, messages) => {
+  // addMessagesToChatWithId: (chatId, messages) => {
+  //   set(
+  //     produce<UseChatType>((state) => {
+  //       const index = get().chats.findIndex((chat) => chat.id == chatId);
+  //       if (index < 0) console.warn("Can't add messages to not existsing chat");
+  //       else state.chats[index].messages = messages;
+  //     }),
+  //   );
+  // },
+  //
+  //
+  //
+  //
+  getMessagesWithChatId: (chatId) => {
+    const messages = get().messages.get(chatId);
+    return messages ? messages : [];
+  },
+  //
+  //
+  //
+  //
+  messages: new Map(),
+  //
+  //
+  //
+  //
+  mergeMessages: (chatId, ...messages) => {
     set(
       produce<UseChatType>((state) => {
-        const index = get().chats.findIndex((chat) => chat.id == chatId);
-        if (index < 0) console.warn("Can't add messages to not existsing chat");
-        else state.chats[index].messages = messages;
+        const array = get().messages.get(chatId) ?? [];
+        const allMessages = [...array, ...messages];
+        const idsWithDuplicates = allMessages.map((msg) => msg.id);
+        const ids = Array.from(new Set(idsWithDuplicates));
+
+        const messagesArray = ids.map((id) => allMessages.find((msg) => msg.id == id)!);
+
+        const sortedMessages = messagesArray.sort((a, b) => +b.createdAt.toDate() - +a.createdAt.toDate());
+        state.messages.set(chatId, sortedMessages.reverse());
       }),
     );
   },

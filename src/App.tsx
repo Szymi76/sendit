@@ -4,6 +4,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
 import Chat from "./pages/chat";
+import ChatV4 from "./pages/chat_v4";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/register";
@@ -23,6 +24,7 @@ const App = () => {
           <Route element={<Access.Authenticated />}>
             <Route path="/chat" element={<Chat />} />
             <Route path="/search" element={<Search />} />
+            <Route path="chatv4" element={<ChatV4 />} />
           </Route>
           <Route element={<Access.All />}>
             <Route path="/" element={<Navigate to="/home" replace />} />

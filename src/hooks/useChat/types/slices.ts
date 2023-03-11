@@ -44,6 +44,12 @@ export type ChatsSlice = {
    */
   chats: Chat[];
   /**
+   *
+   * @param chatId id czatu
+   * @returns Zwraca wiadomości w postaci `Message[]` lub `[]` w przypadku braku czatu.
+   */
+  getMessagesWithChatId: (chatId: string) => Message[];
+  /**
    * Zwraca aktualnie subskrybowany czat.
    */
   currentChat: Chat | null;
@@ -69,7 +75,7 @@ export type ChatsSlice = {
    * @param messages tablica wiadomości
    * @description Rozszerza, konkretny czat o wiadomości.
    */
-  addMessagesToChatWithId: (chatId: string, messages: Message[]) => void;
+  // addMessagesToChatWithId: (chatId: string, messages: Message[]) => void;
   /**
    *
    * @param id id czatu który chcemy dodać do kolejki
@@ -114,9 +120,22 @@ export type ChatsSlice = {
    */
   deleteChat: (chatId: string) => Promise<void>;
   /**
-   * Powoduje pobranie większej ilości wiadomości
+   * Powoduje pobranie większej ilości wiadomości.
    */
   fetchMoreMessages: boolean;
+
+  /**
+   * Mapa przechowuje wiadomości czatu na podstawie id.
+   */
+  messages: Map<string, Message[]>;
+
+  /**
+   *
+   * @param chatId id czatu
+   * @param messages tablica wiadomości
+   * @returns dodaje wiadomości do mapy
+   */
+  mergeMessages: (chatId: string, ...messages: Message[]) => void;
 };
 
 export type State = { isLoading: boolean; isError: boolean };

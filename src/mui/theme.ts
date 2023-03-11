@@ -14,6 +14,11 @@ const theme = createTheme({
     primary: {
       main: "#4f46e5",
     },
+    secondary: {
+      main: "#FFFFFF",
+      light: "#FFFFFF",
+      dark: "#FFFFFF",
+    },
     success: {
       main: "#16a34a",
       light: "#86efac",
@@ -79,6 +84,13 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           zIndex: 3000,
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          zIndex: 1300,
         },
       },
     },
