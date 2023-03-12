@@ -15,9 +15,15 @@ const ChatNav = () => {
   const changeCreateNewChatVisibilityTo = useStates((state) => state.changeCreateNewChatVisibilityTo);
   const chnageChatListVisibilityTo = useStates((state) => state.chnageChatListVisibilityTo);
   const isCreateNewChatVisible = useStates((state) => state.isCreateNewChatVisible);
+  const changeUserSettingsVisibility = useStates((state) => state.changeUserSettingsVisibility);
+  const isUserSettingsVisible = useStates((state) => state.isUserSettingsVisible);
+  const isSearchDialogVisible = useStates((state) => state.isSearchDialogVisible);
+  const changeSearchDialogVisibility = useStates((state) => state.changeSearchDialogVisibility);
 
   const toggleChatListVisibilityTo = () => chnageChatListVisibilityTo(!isChatListVisible);
   const toggleCreateNewChatVisibilityTo = () => changeCreateNewChatVisibilityTo(!isCreateNewChatVisible);
+  const toggleUserSettingsVisibilityTo = () => changeUserSettingsVisibility(!isUserSettingsVisible);
+  const toggleSearchDialogVisibility = () => changeSearchDialogVisibility(!isSearchDialogVisible);
 
   const handleLogout = async () => logout();
 
@@ -37,12 +43,12 @@ const ChatNav = () => {
         <IconAsButton
           icon={<PersonSearchIcon color="secondary" />}
           title="Poszukaj znajomych"
-          fabProps={{ variant: "transparent" }}
+          fabProps={{ variant: "transparent", onClick: toggleSearchDialogVisibility }}
         />
         <IconAsButton
           icon={<SettingsIcon color="secondary" />}
           title="Ustawienia"
-          fabProps={{ variant: "transparent" }}
+          fabProps={{ variant: "transparent", onClick: toggleUserSettingsVisibilityTo }}
         />
         <IconAsButton
           icon={<LogoutIcon color="secondary" />}

@@ -57,7 +57,7 @@ const CreateNewChat = () => {
   return (
     <Wrapper>
       <Header>
-        <HeaderText> Utwórz nowy czat grupowy</HeaderText>
+        <HeaderText>Utwórz nowy czat</HeaderText>
         <IconAsButton
           icon={<TryIcon />}
           title="Utwórz czat"
