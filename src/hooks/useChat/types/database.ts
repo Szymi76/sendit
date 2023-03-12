@@ -7,7 +7,7 @@
 import { DocumentReference, Timestamp } from "firebase/firestore";
 
 import { User } from "./client";
-import { ChatType } from "./other";
+import { ChatRole, ChatRolesArray, ChatType } from "./other";
 
 export type db_Message = {
   author: DocumentReference<User>;
@@ -19,6 +19,7 @@ export type db_Message = {
 export type db_Chat = {
   participants: DocumentReference<User>[];
   participantsIdsAsString: string;
+  roles: ChatRolesArray;
   photoURL: string | null;
   name: string;
   type: ChatType;

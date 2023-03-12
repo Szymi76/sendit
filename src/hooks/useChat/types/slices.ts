@@ -1,5 +1,5 @@
 import { Chat, Message, User } from "./client";
-import { ChatType } from "./other";
+import { ChatRolesArray, ChatType } from "./other";
 
 export type UsersSlice = {
   /**
@@ -136,6 +136,13 @@ export type ChatsSlice = {
    * @returns dodaje wiadomości do mapy
    */
   mergeMessages: (chatId: string, ...messages: Message[]) => void;
+  /**
+   *
+   * @param chatId id czatu
+   * @param newRolesArray tablica nowych rol uczestników
+   * @description Zmienia role uczestników danego czatu. Dostępne role: `owner`, `admin` i `user`.
+   */
+  changeChatRoles: (chatId: string, newRolesArray: ChatRolesArray) => Promise<void>;
 };
 
 export type State = { isLoading: boolean; isError: boolean };

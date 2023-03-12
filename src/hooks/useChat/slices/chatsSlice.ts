@@ -4,8 +4,8 @@ import produce from "immer";
 import { StateCreator } from "zustand";
 
 import uploadFile from "../../../firebase/utils/uploadFile";
-import { Message } from "../types/client";
 import { db_Chat, db_Message } from "../types/database";
+import { ChatRolesArray } from "../types/other";
 import { ChatsSlice, UseChatType } from "../types/slices";
 import refs from "../utils/refs";
 
@@ -55,9 +55,16 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   createChat: async (ids, type, name, photo) => {
+    const currentUser = get().currentUser!;
+
+    const roles: ChatRolesArray = ids.map((id) => {
+      return { uid: id, role: currentUser.uid == id ? "owner" : "user" };
+    });
+
     const newChat: db_Chat = {
       participants: ids.map((uid) => refs.users.doc(uid)),
       participantsIdsAsString: ids.join(","),
+      roles,
       type,
       name,
       photoURL: null,
@@ -166,19 +173,6 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   //
-  // addMessagesToChatWithId: (chatId, messages) => {
-  //   set(
-  //     produce<UseChatType>((state) => {
-  //       const index = get().chats.findIndex((chat) => chat.id == chatId);
-  //       if (index < 0) console.warn("Can't add messages to not existsing chat");
-  //       else state.chats[index].messages = messages;
-  //     }),
-  //   );
-  // },
-  //
-  //
-  //
-  //
   getMessagesWithChatId: (chatId) => {
     const messages = get().messages.get(chatId);
     return messages ? messages : [];
@@ -206,5 +200,17 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
         state.messages.set(chatId, sortedMessages.reverse());
       }),
     );
+  },
+  //
+  //
+  //
+  //
+  changeChatRoles: async (chatId, newRolesArray) => {
+    const chat = get().getChatById(chatId);
+
+    if (!chat) throw new Error("Can't change roles to not existing chat");
+
+    const chatRef = refs.chats.doc(chat.id);
+    await updateDoc(chatRef, { roles: newRolesArray });
   },
 });

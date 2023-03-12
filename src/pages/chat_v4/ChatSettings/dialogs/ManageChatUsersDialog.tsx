@@ -5,28 +5,36 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   List,
   ListItem,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 
 import { AvatarV2 } from "../../../../components/components";
 import useChat from "../../../../hooks/useChat";
 import { User } from "../../../../hooks/useChat/types/client";
+import { ChatRole, ChatRolesArray } from "../../../../hooks/useChat/types/other";
 
 const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const [users, setUsers] = useState<string[]>([]);
   const chat = useChat((state) => state.currentChat)!;
   const friends = useChat((state) => state.friends);
   const changeChatParticipants = useChat((state) => state.changeChatParticipants);
+  const changeChatRoles = useChat((state) => state.changeChatRoles);
+  const [roles, setRoles] = useState<ChatRolesArray>([]);
 
   // ZMIANA UCZESTNIKÓW CZATU
   const handleChangeParticipants = async () => {
     await changeChatParticipants(chat.id, users);
+    await changeChatRoles(chat.id, roles);
     onClose();
   };
 
@@ -62,21 +70,49 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
   // DOMYŚLNE USTAWIANIE ZAZNACZONYCH UŻYTKOWNIKÓW
   useEffect(() => {
     setUsers(defaultCheckedUsers.ids);
+    setRoles(chat.roles);
   }, []);
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle>Zarządzaj uczestnikami czatu</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <DialogContentText display="flex" gap={1}>
+          Tutaj możesz dodawać i usuwać uczestników oraz przyznawać pozwolenie uczestnikom na edytowanie oraz
+          zarządzanie użytkownikami czatu. By zobaczyć użytkownika, którego chcesz dodać do czatu, musi być on twoim
+          znajomym.
+        </DialogContentText>
         <List>
           {allPossibleUsers.map((user) => {
             if (!user) return <></>;
+
+            const item = roles.find((val) => val.uid == user.uid);
+            const role = item ? item.role : "user";
 
             return (
               <ListItem
                 key={user.uid}
                 secondaryAction={
-                  <Checkbox edge="end" onChange={() => handleToggleUser(user.uid)} checked={users.includes(user.uid)} />
+                  <>
+                    <Checkbox
+                      edge="end"
+                      onChange={() => handleToggleUser(user.uid)}
+                      checked={users.includes(user.uid)}
+                    />
+                    <SelectRole
+                      value={role}
+                      onChange={(e) =>
+                        // @ts-ignore
+                        setRoles((roles) => {
+                          return roles.map((val) => {
+                            if (val.role == "owner") return val;
+                            if (e.target.value == "owner") return val;
+                            return val.uid == user.uid ? { uid: user.uid, role: e.target.value } : val;
+                          });
+                        })
+                      }
+                    />
+                  </>
                 }
                 disablePadding
               >
@@ -106,3 +142,21 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
 };
 
 export default ManageChatUsersDialog;
+
+const SelectRole = ({ value, onChange }: { value: ChatRole; onChange: (e: SelectChangeEvent<ChatRole>) => void }) => {
+  return (
+    <Select
+      labelId="demo-simple-select-standard-label"
+      id="demo-simple-select-standard"
+      value={value}
+      onChange={onChange}
+      label="Age"
+      variant="standard"
+      sx={{ width: 125, ml: 3 }}
+    >
+      <MenuItem value="owner">Twórca</MenuItem>
+      <MenuItem value="admin">Admin</MenuItem>
+      <MenuItem value="user">Uczestnik</MenuItem>
+    </Select>
+  );
+};

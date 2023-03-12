@@ -1,20 +1,21 @@
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import SearchIcon from "@mui/icons-material/Search";
 import {
-  Alert,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Input,
   List,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
-  Snackbar,
+  Typography,
 } from "@mui/material";
 import { where } from "firebase/firestore";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { AvatarV2 } from "../../components/components";
 import useAuth from "../../firebase/hooks/useAuth";
@@ -23,15 +24,18 @@ import useChat from "../../hooks/useChat";
 import { User } from "../../hooks/useChat/types/client";
 import { IconAsButton } from "../chat_v4/components";
 import { useStates } from "../chat_v4/states";
+import { usersWithMatchingQuery } from "./utils";
 
 const Search = () => {
   const isSearchDialogVisible = useStates((state) => state.isSearchDialogVisible);
   const changeSearchDialogVisibility = useStates((state) => state.changeSearchDialogVisibility);
-
-  const onClose = () => changeSearchDialogVisibility(false);
-
   const { user, isLoading } = useAuth();
   const { data: users } = useGetDocumentsWithQuery<User>("users", where("displayName", "!=", user!.displayName));
+  const [query, setQuery] = useState("");
+
+  const onClose = () => changeSearchDialogVisibility(false);
+  const queriedUsers = useMemo(() => usersWithMatchingQuery(users, query), [query, users]);
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => setQuery(e.target.value);
 
   return (
     <Dialog
@@ -42,13 +46,22 @@ const Search = () => {
       aria-describedby="scroll-dialog-description"
       fullWidth
     >
-      <DialogTitle>Lista użytkowników</DialogTitle>
+      <DialogTitle>Poszukaj znajomych</DialogTitle>
       <DialogContent dividers>
+        <Input
+          startAdornment={<SearchIcon />}
+          value={query}
+          onChange={handleQueryChange}
+          placeholder="np. Adama Kowalski"
+          fullWidth
+          sx={{ mt: 1, mb: 3 }}
+        />
         <List>
-          {users.map((u) => (
+          {queriedUsers.map((u) => (
             <UserCard key={u.uid} user={u} />
           ))}
         </List>
+        {queriedUsers.length == 0 && <Typography>Brak wyników</Typography>}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Zamknij</Button>
@@ -63,14 +76,8 @@ const UserCard = ({ user }: { user: User }) => {
   const currentUser = useChat((state) => state.currentUser);
   const isFriend = currentUser!.friends.includes(user.uid);
   const toggleUserAsFriend = useChat((state) => state.toggleUserAsFriend);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  const handleClick = () => {
-    setSnackbarOpen(true);
-    toggleUserAsFriend(user.uid);
-  };
-
-  const onClose = () => setSnackbarOpen(false);
+  const handleClick = async () => await toggleUserAsFriend(user.uid);
 
   return (
     <ListItemButton alignItems="flex-start">
@@ -84,13 +91,6 @@ const UserCard = ({ user }: { user: User }) => {
         fabProps={{ variant: "transparent", onClick: handleClick }}
         tooltipProps={{ PopperProps: { sx: { zIndex: 3000 } } }}
       />
-      <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={onClose}>
-        <Alert color="info">
-          {isFriend
-            ? `Ty i ${user.displayName} jesteście od teraz znajomymi 🙂`
-            : `Ty i ${user.displayName} już nie jesteście znajomymi 😥`}
-        </Alert>
-      </Snackbar>
     </ListItemButton>
   );
 };
