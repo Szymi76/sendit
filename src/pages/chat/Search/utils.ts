@@ -1,4 +1,4 @@
-import { User } from "../../hooks/useChat/types/client";
+import { User } from "../../../hooks/useChat/types/client";
 
 export const usersWithMatchingQuery = (users: User[], query: string) => {
   const result = users.filter((user) => {

@@ -1,19 +1,17 @@
-import { Box, styled } from "@mui/material";
-import { ProgressBar } from "react-loader-spinner";
+import { Box, CircularProgress, styled } from "@mui/material";
 
-export const Wrapper = styled(Box)({
+export const Wrapper = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  backgroundColor: "#FAACA8",
-  backgroundImage: "linear-gradient(19deg, #FAACA8 0%, #DDD6F3 100%)",
+  backgroundColor: theme.palette.grey[100],
   display: "flex",
   justifyContent: "center",
-  paddingTop: 48,
-});
+  paddingTop: theme.spacing(10),
+}));
 
 const Loading = () => {
   return (
     <Wrapper>
-      <ProgressBar height={100} width={200} barColor="#818cf8" borderColor="#818cf8" />
+      <CircularProgress size={50} />
     </Wrapper>
   );
 };

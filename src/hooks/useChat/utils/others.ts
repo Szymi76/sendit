@@ -9,8 +9,8 @@ import useChat from "..";
  * wiadomości do pobrania`.
  */
 export const createMessagesLimit = (chatId: string, min: number, toFetch: number, fetchNew: boolean) => {
-  const exisitngChat = useChat.getState().getChatById(chatId)!;
-  const messagesLen = exisitngChat.messages.length;
+  const messages = useChat.getState().getMessagesWithChatId(chatId);
+  const messagesLen = messages.length;
 
   let limit = messagesLen > min ? messagesLen : toFetch;
   if (fetchNew) limit = messagesLen + toFetch;

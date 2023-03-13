@@ -27,13 +27,5 @@ export const convertChat = async (dbChat: db_Chat, docId: string): Promise<Chat>
   const participantsPromises = dbChat.participants.map((ref) => useChat.getState().getUserById(ref.id));
   const participants = await Promise.all(participantsPromises);
 
-  const messages: Message[] = [];
-  // const existingChat = useChat.getState().getChatById(docId);
-  // if (existingChat) messages = existingChat.messages;
-  // else if (dbChat.messages) {
-  //   const messagesPromises = dbChat.messages.map((msg) => convertMessage(msg));
-  //   messages = await Promise.all(messagesPromises);
-  // } else console.warn("Can't convert messages");
-
-  return { ...dbChat, participants, messages, id: docId };
+  return { ...dbChat, participants, id: docId };
 };

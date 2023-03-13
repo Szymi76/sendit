@@ -3,12 +3,12 @@ import { LoadingButton } from "@mui/lab";
 import { Box, styled, SwipeableDrawer, TextField, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 
-import { FileInput } from "../../components/components";
-import updateUser from "../../firebase/utils/updateUser";
-import useChat from "../../hooks/useChat";
-import { IconAsButton } from "../chat/components";
-import { CHAT_ROOM_HEADER_SPACING, NAV_SPACING, USER_SETTINGS_WIDTH } from "../chat/constants";
-import { useStates } from "../chat/states";
+import FileInput from "../../../components/FileInput";
+import IconAsButton from "../../../components/IconAsButton";
+import updateUser from "../../../firebase/utils/updateUser";
+import useChat from "../../../hooks/useChat";
+import { CHAT_ROOM_HEADER_SPACING, NAV_SPACING, USER_SETTINGS_WIDTH } from "../constants";
+import { useStates } from "../states";
 import { ValuesTypes } from "./utils";
 
 const Settings = () => {

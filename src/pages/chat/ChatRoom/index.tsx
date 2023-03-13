@@ -1,8 +1,8 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Box, styled, Typography } from "@mui/material";
 
+import IconAsButton from "../../../components/IconAsButton";
 import useChat from "../../../hooks/useChat";
-import { IconAsButton } from "../components";
 import { CHAT_ROOM_HEADER_SPACING } from "../constants";
 import { useStates } from "../states";
 import BottomTextField from "./components/BottomTextField";

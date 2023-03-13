@@ -6,9 +6,9 @@ import { Box, ClickAwayListener, Fab, Grid, IconButton, Input, styled, Tooltip }
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useState } from "react";
 
+import IconAsButton from "../../../../components/IconAsButton";
 import useChat from "../../../../hooks/useChat";
 import useToggle from "../../../../hooks/useToggle";
-import { IconAsButton } from "../../components";
 import { CHAT_INPUT_SPACING } from "../../constants";
 
 const BottomTextField = () => {

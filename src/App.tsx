@@ -4,11 +4,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
 import Chat from "./pages/chat";
-import ChatV4 from "./pages/chat";
 import Login from "./pages/login";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/notFound";
 import Register from "./pages/register";
-import Search from "./pages/search";
 
 const App = () => {
   enableMapSet();
@@ -24,7 +22,6 @@ const App = () => {
           <Route element={<Access.Authenticated />}>
             <Route path="/" element={<Navigate to="/chat" replace />} />
             <Route path="/chat" element={<Chat />} />
-            <Route path="/search" element={<Search />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>

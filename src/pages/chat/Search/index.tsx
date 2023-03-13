@@ -17,13 +17,13 @@ import {
 import { where } from "firebase/firestore";
 import { useMemo, useState } from "react";
 
-import { AvatarV2 } from "../../components/components";
-import useAuth from "../../firebase/hooks/useAuth";
-import useGetDocumentsWithQuery from "../../firebase/hooks/useGetDocuments";
-import useChat from "../../hooks/useChat";
-import { User } from "../../hooks/useChat/types/client";
-import { IconAsButton } from "../chat/components";
-import { useStates } from "../chat/states";
+import AvatarV2 from "../../../components/AvatarV2";
+import IconAsButton from "../../../components/IconAsButton";
+import useAuth from "../../../firebase/hooks/useAuth";
+import useGetDocumentsWithQuery from "../../../firebase/hooks/useGetDocuments";
+import useChat from "../../../hooks/useChat";
+import { User } from "../../../hooks/useChat/types/client";
+import { useStates } from "../states";
 import { usersWithMatchingQuery } from "./utils";
 
 const Search = () => {

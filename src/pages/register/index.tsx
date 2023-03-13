@@ -27,7 +27,7 @@ const Register = () => {
 
   return (
     <Content.Wrapper py={10}>
-      <Content.Main maxWidth="md" sx={{ boxShadow: 4 }}>
+      <Content.Main maxWidth="md">
         <Content.Photo src="https://picsum.photos/500/800" alt="Dużo kolorowych parasoli" />
         <Content.Form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" fontWeight={700} mb={3} width="100%">

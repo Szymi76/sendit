@@ -5,7 +5,6 @@ import { firestore } from "../../../firebase";
 import useAuth from "../../../firebase/hooks/useAuth";
 import useChat from "../index";
 import { Chat } from "../types/client";
-import { compareChatAndReplace } from "../utils/compare";
 import { convertChat, convertMessage } from "../utils/converters";
 import refs from "../utils/refs";
 
@@ -39,7 +38,6 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
         const chat = snapshot.docs[i].data();
 
         const convertedChat = await convertChat(chat, chatId);
-        const comparedChat = compareChatAndReplace(convertedChat);
 
         // pobieranie ostatniej wiadomości czatu
         const messagesRef = refs.messages.col(chatId);
@@ -52,7 +50,7 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
           useChat.getState().mergeMessages(chatId, convertedMessage);
         }
 
-        chats.push(comparedChat);
+        chats.push(convertedChat);
       }
 
       // informacja o zakończeniu pobierania

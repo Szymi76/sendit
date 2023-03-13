@@ -2,7 +2,7 @@ import { Box, CircularProgress, styled, Typography } from "@mui/material";
 import { useCallback, useMemo } from "react";
 import { Virtuoso } from "react-virtuoso";
 
-import { AvatarV2 } from "../../../../components/components";
+import AvatarV2 from "../../../../components/AvatarV2";
 import useChat from "../../../../hooks/useChat";
 import { Message } from "../../../../hooks/useChat/types/client";
 

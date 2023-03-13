@@ -7,10 +7,12 @@ export type IconAsButtonProps = {
   fabProps?: FabProps;
   tooltipProps?: Omit<TooltipProps, "children" | "title">;
 };
-export const IconAsButton = (props: IconAsButtonProps) => {
+const IconAsButton = (props: IconAsButtonProps) => {
   return (
     <Tooltip {...props.tooltipProps} title={props.title}>
       <Fab {...props.fabProps}>{props.icon}</Fab>
     </Tooltip>
   );
 };
+
+export default IconAsButton;

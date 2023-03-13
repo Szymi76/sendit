@@ -1,6 +1,6 @@
 import { List, ListItem, ListItemAvatar, ListItemButton, ListItemText, styled, Typography } from "@mui/material";
 
-import { AvatarV2 } from "../../../../components/components";
+import AvatarV2 from "../../../../components/AvatarV2";
 import useChat from "../../../../hooks/useChat";
 import { Chat } from "../../../../hooks/useChat/types/client";
 import { useStates } from "../../states";

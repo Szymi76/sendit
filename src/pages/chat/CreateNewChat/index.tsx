@@ -3,10 +3,10 @@ import { Autocomplete, Box, styled, TextField, Typography } from "@mui/material"
 import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 
-import { AvatarV2, FileInput } from "../../../components/components";
+import AvatarV2 from "../../../components/AvatarV2";
+import FileInput from "../../../components/FileInput";
+import IconAsButton from "../../../components/IconAsButton";
 import useChat from "../../../hooks/useChat";
-import { useCreateNewChat } from "../../../hooks/useChat/hooks";
-import { IconAsButton } from "../components";
 import { CHAT_ROOM_HEADER_SPACING } from "../constants";
 import { useStates } from "../states";
 import { DataType, Errors, OptionItem, validateNameField, validateParticipantsField } from "./utils";
@@ -14,7 +14,10 @@ import { DataType, Errors, OptionItem, validateNameField, validateParticipantsFi
 const CreateNewChat = () => {
   const [data, setData] = useState<DataType>({ name: "", participants: [], photoURL: null });
   const [errors, setErrors] = useState<Errors>({ name: null, participants: null, active: false });
-  const { currentUser, createChat, friends, creatingChat } = useCreateNewChat();
+  const currentUser = useChat((state) => state.currentUser);
+  const createChat = useChat((state) => state.createChat);
+  const friends = useChat((state) => state.friends);
+  const creatingChat = useChat((state) => state.creatingChat);
   const changeCreateNewChatVisibilityTo = useStates((state) => state.changeCreateNewChatVisibilityTo);
 
   // tworzy nowy czat jeśli dane się zgadzają

@@ -3,7 +3,7 @@ import HistoryIcon from "@mui/icons-material/History";
 import PersonIcon from "@mui/icons-material/Person";
 import { Box, styled } from "@mui/material";
 
-import { IconAsButton } from "../../components";
+import IconAsButton from "../../../../components/IconAsButton";
 import { Filter } from "../utils";
 
 export type FilterActionsProps = { changeFilterTo: (filter: Filter) => void };

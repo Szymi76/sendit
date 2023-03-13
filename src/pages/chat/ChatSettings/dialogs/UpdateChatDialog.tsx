@@ -1,7 +1,7 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { FileInput } from "../../../../components/components";
+import FileInput from "../../../../components/FileInput";
 import useChat from "../../../../hooks/useChat";
 import { UpdateValuesTypes } from "../utils";
 

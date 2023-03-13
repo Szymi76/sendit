@@ -7,10 +7,10 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import { Alert, Box, Snackbar, styled, SwipeableDrawer, Typography } from "@mui/material";
 import { useState } from "react";
 
-import { AvatarV2 } from "../../../components/components";
+import AvatarV2 from "../../../components/AvatarV2";
+import IconAsButton from "../../../components/IconAsButton";
 import useChat from "../../../hooks/useChat";
 import useToggle from "../../../hooks/useToggle";
-import { IconAsButton } from "../components";
 import { CHAT_ROOM_HEADER_SPACING, CHAT_SETTINGS_WIDTH, NAV_SPACING } from "../constants";
 import { useStates } from "../states";
 import Participants from "./components/Participants";

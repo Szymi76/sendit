@@ -5,8 +5,8 @@ import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { AppBar, Box, styled } from "@mui/material";
 
+import IconAsButton from "../../../components/IconAsButton";
 import logout from "../../../firebase/utils/logout";
-import { IconAsButton } from "../components";
 import { NAV_SPACING } from "../constants";
 import { useStates } from "../states";
 

@@ -2,7 +2,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import ShieldIcon from "@mui/icons-material/Shield";
 import { Box, Divider, List, ListItem, ListItemAvatar, ListItemText, styled, Tooltip, Typography } from "@mui/material";
 
-import { AvatarV2 } from "../../../../components/components";
+import AvatarV2 from "../../../../components/AvatarV2";
 import useChat from "../../../../hooks/useChat";
 import { User } from "../../../../hooks/useChat/types/client";
 

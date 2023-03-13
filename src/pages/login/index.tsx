@@ -4,7 +4,6 @@ import { Link, Typography } from "@mui/material";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 
-import CanyonImage from "../../assets/canyon.jpg";
 import useLoginUser from "../../firebase/hooks/useLoginUser";
 import * as Content from "./Content";
 
@@ -26,7 +25,7 @@ const Login = () => {
 
   return (
     <Content.Wrapper py={10}>
-      <Content.Main maxWidth="md" sx={{ boxShadow: 4 }}>
+      <Content.Main maxWidth="md">
         <Content.Photo src="https://picsum.photos/500/800" alt="Zdjęcie kanionu" />
         <Content.Form onSubmit={handleSubmit(onSubmit)}>
           <Typography variant="h4" fontWeight={700} mb={3} width="100%">

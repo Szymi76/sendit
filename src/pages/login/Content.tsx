@@ -4,11 +4,11 @@ import { Box, styled, TextField, TextFieldProps } from "@mui/material";
 // import MacbookImage from "../../assets/macbook.jpg";
 
 // tło w postaci gradientu
-export const Wrapper = styled(Box)({
+export const Wrapper = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
-  backgroundColor: "#FAACA8",
-  backgroundImage: "linear-gradient(19deg, #FAACA8 0%, #DDD6F3 100%)",
-});
+  backgroundColor: theme.palette.grey[50],
+  // backgroundImage: "linear-gradient(19deg, #FAACA8 0%, #DDD6F3 100%)",
+}));
 
 // kontent dla zdjęcia i formularza
 export const Main = styled(Box)(({ theme }) => ({
@@ -19,6 +19,7 @@ export const Main = styled(Box)(({ theme }) => ({
   margin: "0 auto",
   display: "flex",
   overflow: "hidden",
+  border: `1px solid ${theme.palette.grey[300]}`,
 }));
 
 // zdjęcie po lewej stronie

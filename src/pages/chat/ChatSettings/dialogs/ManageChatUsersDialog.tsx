@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 
-import { AvatarV2 } from "../../../../components/components";
+import AvatarV2 from "../../../../components/AvatarV2";
 import useChat from "../../../../hooks/useChat";
 import { User } from "../../../../hooks/useChat/types/client";
 import { ChatRole, ChatRolesArray } from "../../../../hooks/useChat/types/other";

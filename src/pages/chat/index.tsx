@@ -1,24 +1,21 @@
 import { Box, styled } from "@mui/material";
 
 import useChat from "../../hooks/useChat";
-import Search from "../search";
-import Settings from "../settings";
 import ChatList from "./ChatList";
-import ChatNav from "./ChatNav";
 import ChatRoom from "./ChatRoom";
 import ChatSettings from "./ChatSettings";
 import { CHAT_LIST_WIDTH } from "./constants";
 import CreateNewChat from "./CreateNewChat";
+import ChatNav from "./Nav";
+import Search from "./Search";
+import Settings from "./Settings";
 import { useStates } from "./states";
-// import useResize from "./hooks/useResize";
 
 const Chat = () => {
   const isChatListVisible = useStates((state) => state.isChatListVisible);
   const isCreateNewChatVisible = useStates((state) => state.isCreateNewChatVisible);
   const currentChat = useChat((state) => state.currentChat);
   const currentUser = useChat((state) => state.currentUser);
-
-  // useResize(900, () => chnageChatListVisibilityTo(false));
 
   const showChatRoom = !isCreateNewChatVisible && currentChat;
 
