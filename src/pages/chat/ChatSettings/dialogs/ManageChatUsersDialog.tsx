@@ -25,16 +25,19 @@ import { ChatRole, ChatRolesArray } from "../../../../hooks/useChat/types/other"
 
 const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const [users, setUsers] = useState<string[]>([]);
+  const [roles, setRoles] = useState<ChatRolesArray>([]);
   const chat = useChat((state) => state.currentChat)!;
   const friends = useChat((state) => state.friends);
   const changeChatParticipants = useChat((state) => state.changeChatParticipants);
   const changeChatRoles = useChat((state) => state.changeChatRoles);
-  const [roles, setRoles] = useState<ChatRolesArray>([]);
+  const getUserRole = useChat((state) => state.getUserRole);
+  const currentUser = useChat((state) => state.currentUser)!;
 
   // ZMIANA UCZESTNIKÓW CZATU
   const handleChangeParticipants = async () => {
     await changeChatParticipants(chat.id, users);
-    await changeChatRoles(chat.id, roles);
+    const currentUserRole = getUserRole(currentUser.uid, chat.id);
+    if (currentUserRole == "owner") await changeChatRoles(chat.id, roles);
     onClose();
   };
 
@@ -50,7 +53,7 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
     const all: User[] = [...chat.participants, ...friends];
     const ids = Array.from(new Set(all.map((user) => user.uid)));
     return ids.map((id) => all.find((user) => user.uid == id)!);
-  }, [chat, friends]);
+  }, [chat.participants, friends]);
 
   // DOMYŚLNIE ZAZNACZENI UCZESTNICY
   const defaultCheckedUsers = useMemo(() => {
@@ -71,7 +74,15 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
   useEffect(() => {
     setUsers(defaultCheckedUsers.ids);
     setRoles(chat.roles);
-  }, []);
+  }, [chat.participants, chat.roles]);
+
+  // ZMIENIA ROLĘ UŻYTKOWNIKA
+  const handleChangeRole = (e: SelectChangeEvent<ChatRole>, user: User) => {
+    // @ts-ignore
+    setRoles((roles) => {
+      return roles.map((item) => (item.uid == user.uid ? { uid: item.uid, role: e.target.value } : item));
+    });
+  };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth>
@@ -86,35 +97,25 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
           {allPossibleUsers.map((user) => {
             if (!user) return <></>;
 
-            const item = roles.find((val) => val.uid == user.uid);
-            const role = item ? item.role : "user";
+            // ROLA UŻYTKOWNIKA
+            const roleObject = roles.find((val) => val.uid == user.uid);
+            const role = roleObject ? roleObject.role : "user";
+
+            const isCurrentUserOwner = getUserRole(currentUser.uid, chat.id) == "owner";
+            const isChecked = users.includes(user.uid);
+            const isDisabled =
+              role == "owner" || currentUser.uid == user.uid || (role == "admin" && !isCurrentUserOwner);
 
             return (
               <ListItem
                 key={user.uid}
+                disablePadding
                 secondaryAction={
                   <>
-                    <Checkbox
-                      edge="end"
-                      onChange={() => handleToggleUser(user.uid)}
-                      checked={users.includes(user.uid)}
-                    />
-                    <SelectRole
-                      value={role}
-                      onChange={(e) =>
-                        // @ts-ignore
-                        setRoles((roles) => {
-                          return roles.map((val) => {
-                            if (val.role == "owner") return val;
-                            if (e.target.value == "owner") return val;
-                            return val.uid == user.uid ? { uid: user.uid, role: e.target.value } : val;
-                          });
-                        })
-                      }
-                    />
+                    <Checkbox onChange={() => handleToggleUser(user.uid)} checked={isChecked} disabled={isDisabled} />
+                    <SelectRole value={role} onChange={(e) => handleChangeRole(e, user)} role={role} />
                   </>
                 }
-                disablePadding
               >
                 <ListItemButton>
                   <ListItemAvatar>
@@ -126,6 +127,7 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
             );
           })}
         </List>
+
         {numberOfUsers.toAdd > 0 && (
           <Alert severity="success">Liczba uczestników, która zostanie dodana {numberOfUsers.toAdd}</Alert>
         )}
@@ -133,6 +135,7 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
           <Alert severity="error">Liczba uczestników, która zostanie usunięta {numberOfUsers.toRemove}</Alert>
         )}
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Anuluj</Button>
         <Button onClick={handleChangeParticipants}>Zapisz</Button>
@@ -143,20 +146,42 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
 
 export default ManageChatUsersDialog;
 
-const SelectRole = ({ value, onChange }: { value: ChatRole; onChange: (e: SelectChangeEvent<ChatRole>) => void }) => {
+const SelectRole = ({
+  value,
+  onChange,
+  role,
+}: {
+  value: ChatRole;
+  onChange: (e: SelectChangeEvent<ChatRole>) => void;
+  role: ChatRole;
+}) => {
+  const currentUser = useChat((state) => state.currentUser)!;
+  const currentChat = useChat((state) => state.currentChat)!;
+  const getUserRole = useChat((state) => state.getUserRole);
+
+  const currentUserRole = getUserRole(currentUser.uid, currentChat.id);
+  const isUserOwner = role == "owner";
+
   return (
     <Select
-      labelId="demo-simple-select-standard-label"
-      id="demo-simple-select-standard"
-      value={value}
-      onChange={onChange}
       label="Age"
       variant="standard"
       sx={{ width: 125, ml: 3 }}
+      value={value}
+      onChange={onChange}
+      disabled={currentUserRole != "owner"}
     >
-      <MenuItem value="owner">Twórca</MenuItem>
-      <MenuItem value="admin">Admin</MenuItem>
-      <MenuItem value="user">Uczestnik</MenuItem>
+      <MenuItem value="owner" disabled>
+        Twórca
+      </MenuItem>
+
+      <MenuItem value="admin" disabled={isUserOwner}>
+        Admin
+      </MenuItem>
+
+      <MenuItem value="user" disabled={isUserOwner}>
+        Uczestnik
+      </MenuItem>
     </Select>
   );
 };

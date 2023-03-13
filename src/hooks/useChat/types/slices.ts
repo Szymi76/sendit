@@ -1,5 +1,5 @@
 import { Chat, Message, User } from "./client";
-import { ChatRolesArray, ChatType } from "./other";
+import { ChatRole, ChatRolesArray, ChatType } from "./other";
 
 export type UsersSlice = {
   /**
@@ -143,6 +143,14 @@ export type ChatsSlice = {
    * @description Zmienia role uczestników danego czatu. Dostępne role: `owner`, `admin` i `user`.
    */
   changeChatRoles: (chatId: string, newRolesArray: ChatRolesArray) => Promise<void>;
+  /**
+   *
+   * @param uid id użytkownika
+   * @param chatId id czatu
+   * @param defaultRole rola, która zostanie zwrócona, jeśli użytkownika nie ma w podanym czacie
+   * @returns Zwraca role użytkownika w czacie
+   */
+  getUserRole: (uid: string, chatId: string, defaultRole?: ChatRole) => ChatRole;
 };
 
 export type State = { isLoading: boolean; isError: boolean };

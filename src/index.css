@@ -4,3 +4,7 @@
     box-sizing: border-box;
     font-family: 'Noto Sans', sans-serif;
 }
+
+.PrivateSwipeArea-root {
+    width: 0px !important;
+}

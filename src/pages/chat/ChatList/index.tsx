@@ -17,11 +17,12 @@ const ChatList = () => {
   const isChatListVisible = useStates((state) => state.isChatListVisible);
   const fetchingChats = useChat((state) => state.fetchingChats);
   const subscribe = useChat((state) => state.subscribe);
+  const messages = useChat((state) => state.messages);
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setQuery(e.target.value);
   const changeFilterTo = (arg: Filter) => setFilter(arg);
 
-  const filteredChats = useMemo(() => filterChats(chats, query, filter), [chats, query, filter]);
+  const filteredChats = useMemo(() => filterChats(chats, query, messages, filter), [chats, query, filter, messages]);
 
   useEffect(() => {
     if (!initialSet && chats.length > 0) {

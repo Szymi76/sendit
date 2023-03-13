@@ -6,9 +6,9 @@ import React, { useEffect, useState } from "react";
 import { FileInput } from "../../components/components";
 import updateUser from "../../firebase/utils/updateUser";
 import useChat from "../../hooks/useChat";
-import { IconAsButton } from "../chat_v4/components";
-import { CHAT_ROOM_HEADER_SPACING, NAV_SPACING, USER_SETTINGS_WIDTH } from "../chat_v4/constants";
-import { useStates } from "../chat_v4/states";
+import { IconAsButton } from "../chat/components";
+import { CHAT_ROOM_HEADER_SPACING, NAV_SPACING, USER_SETTINGS_WIDTH } from "../chat/constants";
+import { useStates } from "../chat/states";
 import { ValuesTypes } from "./utils";
 
 const Settings = () => {

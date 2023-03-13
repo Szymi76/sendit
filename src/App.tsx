@@ -4,9 +4,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
 import Chat from "./pages/chat";
-import ChatV4 from "./pages/chat_v4";
-import Home from "./pages/home";
+import ChatV4 from "./pages/chat";
 import Login from "./pages/login";
+import NotFound from "./pages/NotFound";
 import Register from "./pages/register";
 import Search from "./pages/search";
 
@@ -22,14 +22,11 @@ const App = () => {
             <Route path="/stworz-konto" element={<Register />} />
           </Route>
           <Route element={<Access.Authenticated />}>
+            <Route path="/" element={<Navigate to="/chat" replace />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/search" element={<Search />} />
-            <Route path="chatv4" element={<ChatV4 />} />
           </Route>
-          <Route element={<Access.All />}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<Home />} />
-          </Route>
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

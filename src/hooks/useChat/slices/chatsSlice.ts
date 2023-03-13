@@ -210,7 +210,34 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
 
     if (!chat) throw new Error("Can't change roles to not existing chat");
 
+    const currentUser = get().currentUser!;
+    const currentUserRole = get().getUserRole(currentUser.uid, chatId);
+    if (currentUserRole != "owner") throw new Error("Only owner can change roles");
+
+    const roles = chat.roles;
+    const isMoreThenOneOwner = roles.filter((item) => item.role == "owner").length > 1;
+    const owner = roles.find((item) => item.role == "owner");
+    const newOwner = newRolesArray.find((item) => item.role == "owner");
+    const isOwnerHaveBeenChanged = owner && newOwner && owner.uid != newOwner.uid;
+
+    if (isMoreThenOneOwner || isOwnerHaveBeenChanged)
+      throw new Error("Owner have been changed or there is more then one");
+
     const chatRef = refs.chats.doc(chat.id);
     await updateDoc(chatRef, { roles: newRolesArray });
+  },
+  //
+  //
+  //
+  //
+  getUserRole: (uid, chatId, defaultRole = "user") => {
+    const chat = get().getChatById(chatId);
+
+    if (!chat) throw new Error("Can't get user role from not existing chat");
+
+    const user = chat.roles.find((val) => val.uid == uid);
+
+    if (!user) return defaultRole;
+    return user.role;
   },
 });

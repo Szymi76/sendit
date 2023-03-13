@@ -1,5 +1,5 @@
 import { Box, CircularProgress, styled, Typography } from "@mui/material";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Virtuoso } from "react-virtuoso";
 
 import { AvatarV2 } from "../../../../components/components";
@@ -10,8 +10,9 @@ const Messages = ({ chatId }: { chatId: string }) => {
   const sendingMessage = useChat((state) => state.sendingMessage);
   const getMessagesWithChatId = useChat((state) => state.getMessagesWithChatId);
   const currentUser = useChat((state) => state.currentUser)!;
+  const allMessages = useChat((state) => state.messages);
 
-  const messages = getMessagesWithChatId(chatId);
+  const messages = useMemo(() => getMessagesWithChatId(chatId), [allMessages]);
   const messagesArrayIsEmpty = messages.length == 0;
   const triggerMoreMessagesFetch = useCallback(() => useChat.setState({ fetchMoreMessages: true }), []);
 

@@ -1,43 +1,78 @@
-import { Box } from "@mui/material";
+import { Box, styled } from "@mui/material";
 
-import useChat from "../../hooks/useChat/index";
-import { ChatsProvider } from "../../hooks/useChat/providers/ChatsProvider";
-import { CurrentUserProvider } from "../../hooks/useChat/providers/CurrentUserProvider";
-import { FriendsProvider } from "../../hooks/useChat/providers/FriendsProvider";
-import { MessagesProvider } from "../../hooks/useChat/providers/MessagesProvider";
-import { SubscriptionProvider } from "../../hooks/useChat/providers/SubscriptionProvider";
-import useToggle from "../../hooks/useToggle";
-import Chat from "./Chat";
-import ChatsList from "./ChatsList";
+import useChat from "../../hooks/useChat";
+import Search from "../search";
+import Settings from "../settings";
+import ChatList from "./ChatList";
+import ChatNav from "./ChatNav";
+import ChatRoom from "./ChatRoom";
+import ChatSettings from "./ChatSettings";
+import { CHAT_LIST_WIDTH } from "./constants";
 import CreateNewChat from "./CreateNewChat";
-import Default from "./Default";
+import { useStates } from "./states";
+// import useResize from "./hooks/useResize";
 
-const ChatV3 = () => {
-  const [isCreateNewChatVisible, toggleCreateNewChatVisibility] = useToggle();
+const Chat = () => {
+  const isChatListVisible = useStates((state) => state.isChatListVisible);
+  const isCreateNewChatVisible = useStates((state) => state.isCreateNewChatVisible);
   const currentChat = useChat((state) => state.currentChat);
+  const currentUser = useChat((state) => state.currentUser);
 
-  const createNewChat = isCreateNewChatVisible && <CreateNewChat toggleVisibility={toggleCreateNewChatVisibility} />;
-  const chat = currentChat && !isCreateNewChatVisible && <Chat />;
-  const defaultPage = !isCreateNewChatVisible && !currentChat && <Default />;
+  // useResize(900, () => chnageChatListVisibilityTo(false));
+
+  const showChatRoom = !isCreateNewChatVisible && currentChat;
 
   return (
-    <CurrentUserProvider>
-      <FriendsProvider>
-        <ChatsProvider>
-          <MessagesProvider>
-            <SubscriptionProvider>
-              <Box display="flex" paddingLeft={{ xs: "50px", md: 0 }}>
-                <ChatsList toggleCreateNewChatVisibility={toggleCreateNewChatVisibility} />
-                {createNewChat}
-                {chat}
-                {defaultPage}
-              </Box>
-            </SubscriptionProvider>
-          </MessagesProvider>
-        </ChatsProvider>
-      </FriendsProvider>
-    </CurrentUserProvider>
+    <Wrapper>
+      <ChatNav />
+      <Main open={isChatListVisible}>
+        <ChatList />
+        <Content>{showChatRoom ? <ChatRoom /> : <CreateNewChat />}</Content>
+        {showChatRoom && <ChatSettings />}
+      </Main>
+      {currentUser && <Settings />}
+      {currentUser && <Search />}
+    </Wrapper>
   );
 };
 
-export default ChatV3;
+export default Chat;
+
+const Wrapper = styled(Box)(({ theme }) => ({
+  height: "100vh",
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+}));
+
+const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
+  open?: boolean;
+}>(({ theme, open }) => ({
+  display: "flex",
+  flexGrow: 1,
+  transition: theme.transitions.create("margin", {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  marginLeft: `-${CHAT_LIST_WIDTH}px`,
+  ...(open && {
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    [theme.breakpoints.up("md")]: {
+      marginLeft: 0,
+    },
+    [theme.breakpoints.down("md")]: {
+      marginLeft: `-${CHAT_LIST_WIDTH}px`,
+    },
+  }),
+}));
+
+const Content = styled(Box)(({ theme }) => ({
+  height: "100%",
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: theme.palette.grey[100],
+}));

@@ -1,5 +1,6 @@
 import PeopleIcon from "@mui/icons-material/People";
-import { Divider, List, ListItem, ListItemAvatar, ListItemText, styled, Typography } from "@mui/material";
+import ShieldIcon from "@mui/icons-material/Shield";
+import { Box, Divider, List, ListItem, ListItemAvatar, ListItemText, styled, Tooltip, Typography } from "@mui/material";
 
 import { AvatarV2 } from "../../../../components/components";
 import useChat from "../../../../hooks/useChat";
@@ -23,13 +24,38 @@ const Participants = () => {
 export default Participants;
 
 const ListSingleItem = ({ user }: { user: User }) => {
+  const PrimaryText = () => {
+    const getUserRole = useChat((state) => state.getUserRole);
+    const currentChat = useChat((state) => state.currentChat)!;
+
+    const role = getUserRole(user.uid, currentChat.id);
+
+    let prettyRole = "Uczestnik";
+    if (role == "owner") prettyRole = "Twórca";
+    if (role == "admin") prettyRole = "Admin";
+
+    let iconColor = "info";
+    if (role == "owner") iconColor = "warning";
+    if (role == "admin") iconColor = "success";
+
+    return (
+      <Box display="flex" alignItems="center" gap={1}>
+        {user.displayName}
+        <Tooltip title={prettyRole}>
+          {/* @ts-ignore */}
+          <ShieldIcon color={iconColor} fontSize="small" />
+        </Tooltip>
+      </Box>
+    );
+  };
+
   return (
     <>
       <ListItem alignItems="flex-start">
         <ListItemAvatar>
           <AvatarV2 src={user.photoURL} name={user.displayName} />
         </ListItemAvatar>
-        <ListItemText primary={user.displayName} secondary={user.email} />
+        <ListItemText primary={<PrimaryText />} secondary={user.email} />
       </ListItem>
       <Divider variant="inset" component="li" />
     </>

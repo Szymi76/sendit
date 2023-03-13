@@ -51,7 +51,7 @@ const ChatCard = ({ chat }: { chat: Chat }) => {
         <ListItemText
           primary={chatName}
           secondary={lastMessage}
-          secondaryTypographyProps={{ color: (theme) => theme.palette.grey[300], fontSize: 12 }}
+          secondaryTypographyProps={{ color: (theme) => theme.palette.grey[300], fontSize: 12, noWrap: true }}
         />
       </ListItemButton>
     </ListItem>

@@ -1,17 +1,21 @@
-import { Autocomplete, Box, TextField } from "@mui/material";
+import TryIcon from "@mui/icons-material/Try";
+import { Autocomplete, Box, styled, TextField, Typography } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 
-import { FileInput } from "../../../components/components";
+import { AvatarV2, FileInput } from "../../../components/components";
+import useChat from "../../../hooks/useChat";
 import { useCreateNewChat } from "../../../hooks/useChat/hooks";
-import { Header, Loading, Option, Wrapper } from "./components";
+import { IconAsButton } from "../components";
+import { CHAT_ROOM_HEADER_SPACING } from "../constants";
+import { useStates } from "../states";
 import { DataType, Errors, OptionItem, validateNameField, validateParticipantsField } from "./utils";
 
-type CreateNewChatProps = { toggleVisibility: () => void };
-
-const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
+const CreateNewChat = () => {
   const [data, setData] = useState<DataType>({ name: "", participants: [], photoURL: null });
   const [errors, setErrors] = useState<Errors>({ name: null, participants: null, active: false });
   const { currentUser, createChat, friends, creatingChat } = useCreateNewChat();
+  const changeCreateNewChatVisibilityTo = useStates((state) => state.changeCreateNewChatVisibilityTo);
 
   // tworzy nowy czat jeśli dane się zgadzają
   const handleCreateNewChat = async () => {
@@ -29,7 +33,7 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
     const participantsIds = [...participants.map((p) => p.uid), currentUser.uid];
     await createChat(participantsIds, "group", name, photoURL!);
 
-    toggleVisibility();
+    changeCreateNewChatVisibilityTo(false);
   };
 
   const options: OptionItem[] = friends.map(({ uid, displayName }) => {
@@ -52,7 +56,14 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
 
   return (
     <Wrapper>
-      <Header handleCreateNewChat={handleCreateNewChat} />
+      <Header>
+        <HeaderText>Utwórz nowy czat</HeaderText>
+        <IconAsButton
+          icon={<TryIcon />}
+          title="Utwórz czat"
+          fabProps={{ color: "primary", size: "medium", onClick: handleCreateNewChat, sx: { boxShadow: "none" } }}
+        />
+      </Header>
       <Box display="flex" flexDirection="column" gap={4} p={3} maxWidth={550}>
         <Autocomplete
           multiple
@@ -60,7 +71,7 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
           onChange={handleParticipantsChange}
           value={data.participants}
           isOptionEqualToValue={(option, value) => option.uid == value.uid}
-          renderOption={(props, option) => <Option key={option.uid} props={props} option={option} friends={friends} />}
+          renderOption={(props, option) => <Option key={option.uid} props={props} option={option} />}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -95,3 +106,57 @@ const CreateNewChat = ({ toggleVisibility }: CreateNewChatProps) => {
 };
 
 export default CreateNewChat;
+
+const Wrapper = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(1),
+  backgroundColor: theme.palette.grey[100],
+  width: "100%",
+  borderRight: "1px solid",
+  borderColor: theme.palette.grey[300],
+}));
+
+const Header = styled(Box)(({ theme }) => ({
+  height: theme.spacing(CHAT_ROOM_HEADER_SPACING),
+  borderBottom: `1px solid ${theme.palette.grey[300]}`,
+  padding: theme.spacing(2),
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+}));
+
+const HeaderText = styled(Typography)(({ theme }) => ({
+  maxWidth: "70%",
+  fontSize: 28,
+  fontWeight: 500,
+}));
+
+const Option = ({ props, option }: { props: React.HTMLAttributes<HTMLLIElement>; option: OptionItem }) => {
+  const friends = useChat((state) => state.friends);
+  const user = friends.find((user) => user.uid == option.uid)!;
+
+  return (
+    <li {...props} style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+      <AvatarV2 name={user.displayName} src={user.photoURL} />
+      <Typography>{option.label}</Typography>
+    </li>
+  );
+};
+
+const Loading = () => {
+  return (
+    <Box
+      position="fixed"
+      width="100%"
+      height="100%"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      sx={{ bgcolor: "rgba(0,0,0,0.2)" }}
+      zIndex={2000}
+    >
+      <CircularProgress color="primary" size={60} />
+    </Box>
+  );
+};
