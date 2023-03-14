@@ -1,5 +1,5 @@
 import { enableMapSet } from "immer";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
@@ -12,7 +12,7 @@ const App = () => {
   enableMapSet();
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route element={<Layout />}>
           <Route element={<Access.NotAuthenticated />}>
@@ -26,7 +26,7 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 
