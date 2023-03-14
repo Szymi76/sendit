@@ -11,6 +11,7 @@ import Messages from "./components/Messages";
 const ChatRoom = () => {
   const changeChatSettingsVisibilityTo = useStates((state) => state.changeChatSettingsVisibilityTo);
   const currentChat = useChat((state) => state.currentChat)!;
+  const getChatName = useChat((state) => state.getChatName);
 
   const openSettings = () => changeChatSettingsVisibilityTo(true);
 
@@ -18,7 +19,7 @@ const ChatRoom = () => {
     <Wrapper>
       <Header>
         <Typography fontSize={28} fontWeight={500}>
-          {currentChat.name}
+          {getChatName(currentChat)}
         </Typography>
         <IconAsButton
           icon={<MoreVertIcon />}

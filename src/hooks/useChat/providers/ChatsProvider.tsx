@@ -23,8 +23,7 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
   useEffect(() => {
     if (isLoading || !user) return;
 
-    const currentUserRef = refs.users.doc(user.uid);
-    const q = query(refs.chats.col, where("participants", "array-contains", currentUserRef));
+    const q = query(refs.chats.col, where("participantsUids", "array-contains", user.uid));
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       const chats: Chat[] = [];

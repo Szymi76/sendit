@@ -2,7 +2,6 @@ import { arrayRemove, arrayUnion, getDoc, getDocs, query, updateDoc, where } fro
 import produce from "immer";
 import { StateCreator } from "zustand";
 
-import { commonError } from "../types/errors";
 import { UseChatType, UsersSlice } from "../types/slices";
 import { fetchUserById } from "../utils/fetchers";
 import refs from "../utils/refs";
@@ -29,7 +28,7 @@ export const usersSlice: StateCreator<UseChatType, [], [], UsersSlice> = (set, g
   //
   toggleUserAsFriend: async (id) => {
     const currentUser = get().currentUser;
-    if (!currentUser) throw new Error(commonError);
+    if (!currentUser) throw new Error("Can't add or delete friend when you are not logged in");
 
     if (currentUser.uid == id) throw new Error("Can't add yourself as friend");
 
@@ -39,24 +38,32 @@ export const usersSlice: StateCreator<UseChatType, [], [], UsersSlice> = (set, g
     const otherUser = await getDoc(otherUserRef);
     if (!otherUser.exists()) throw new Error("Can't add or delete user that not exists");
 
-    const isFriend = otherUser.data().friends.includes(currentUser.uid);
+    const isFriend = otherUser.data().friendsUids.includes(currentUser.uid);
 
     if (!isFriend) {
-      await updateDoc(currentUserRef, { friends: arrayUnion(id) });
-      await updateDoc(otherUserRef, { friends: arrayUnion(currentUser.uid) });
+      await updateDoc(currentUserRef, { friendsUids: arrayUnion(id) });
+      await updateDoc(otherUserRef, { friendsUids: arrayUnion(currentUser.uid) });
     } else {
-      await updateDoc(currentUserRef, { friends: arrayRemove(id) });
-      await updateDoc(otherUserRef, { friends: arrayRemove(currentUser.uid) });
+      await updateDoc(currentUserRef, { friendsUids: arrayRemove(id) });
+      await updateDoc(otherUserRef, { friendsUids: arrayRemove(currentUser.uid) });
     }
 
-    const alreadyExisitngIndividualChatRef = query(
-      refs.chats.col,
-      where("type", "==", "individual"),
-      where("participantsIdsAsString", "==", [currentUser.uid, id].join(",")),
-    );
-    const alreadyExisitngIndividualChatAsArray = await getDocs(alreadyExisitngIndividualChatRef);
-    if (alreadyExisitngIndividualChatAsArray.docs.length == 0 && !isFriend) {
-      await get().createChat([currentUser.uid, id], "individual", otherUser.data().displayName);
+    const allCurrentUserChatsPromises = currentUser.chatsIds.map((id) => getDoc(refs.chats.doc(id)));
+    const allCurrentUserChats = await Promise.all(allCurrentUserChatsPromises);
+    const isIndividualChatExists = allCurrentUserChats.some((document) => {
+      const chat = document.data();
+      if (!chat) return false;
+      const isCurrentUserIn = chat.participants.some((p) => p.userRef.id == currentUser.uid);
+      const isOtherUserIn = chat.participants.some((p) => p.userRef.id == id);
+      const isChatHaveTwoUsers = chat.participants.length == 2;
+      const isChatIndividual = chat.type == "individual";
+      return isCurrentUserIn && isOtherUserIn && isChatHaveTwoUsers && isChatIndividual;
+    });
+
+    if (!isIndividualChatExists) {
+      const chatId = await get().createChat([currentUser.uid, id], "individual", otherUser.data().displayName);
+      await updateDoc(currentUserRef, { chatsIds: arrayUnion(chatId) });
+      await updateDoc(otherUserRef, { chatsIds: arrayUnion(chatId) });
     }
   },
   //
@@ -77,23 +84,5 @@ export const usersSlice: StateCreator<UseChatType, [], [], UsersSlice> = (set, g
     }
 
     return get().users[index];
-  },
-  //
-  //
-  //
-  //
-  getChatName: (chat) => {
-    if (chat.type == "group") return chat.name;
-
-    const otherUser = chat.participants.filter((parti) => parti?.uid != get().currentUser?.uid)[0];
-    return otherUser ? otherUser.displayName : chat.name;
-  },
-  //
-  //
-  //
-  //
-  changeChatParticipants: async (chatId, newParticipantsIds) => {
-    const participants = newParticipantsIds.map((id) => refs.users.doc(id));
-    await updateDoc(refs.chats.doc(chatId), { participants });
   },
 });

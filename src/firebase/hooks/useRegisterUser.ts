@@ -34,7 +34,8 @@ const useRegisterUser = () => {
         displayName,
         email,
         photoURL: DEFAULT_PHOTO_URL,
-        friends: [],
+        friendsUids: [],
+        chatsIds: [],
       };
 
       // dodawanie użytkownika do bazy danych

@@ -1,10 +1,20 @@
-//
-// Funkcje do konwertowania danych otrzymanych z bazy danych
-//
+/* 
+  Funkcje do konwertowania danych pobranym z bazy danych
+*/
 
 import useChat from "../index";
-import { Chat, Message } from "../types/client";
-import { db_Chat, db_Message } from "../types/database";
+import { Chat, Message, User } from "../types/client";
+import { db_Chat, db_Message, db_User } from "../types/database";
+
+/**
+ *
+ * @param dbUser użytkownik z bazy danych
+ * @returns Zwraca użytkownika z podmienionymi wymaganymi wartościami
+ */
+export const convertUser = async (dbUser: db_User): Promise<User> => {
+  const user: User = dbUser;
+  return user;
+};
 
 /**
  *
@@ -20,12 +30,17 @@ export const convertMessage = async (dbMessage: db_Message, docId: string): Prom
  *
  * @param dbChat czat z bazy danych
  * @param docId id czatu / dokumentu
- * @returns Zwraca czat z podmienionymi wartościami w postaci `Chat`.
- * Jeśli wiadomości posiadają wartość `null` to wiadomości przyjmują wartość `[]`.
+ * @returns Zwraca czat z podmienionymi wymaganymi wartościami
  */
 export const convertChat = async (dbChat: db_Chat, docId: string): Promise<Chat> => {
-  const participantsPromises = dbChat.participants.map((ref) => useChat.getState().getUserById(ref.id));
-  const participants = await Promise.all(participantsPromises);
+  const usersPromises = dbChat.participants.map((user) => useChat.getState().getUserById(user.userRef.id));
+  const users = await Promise.all(usersPromises);
+  // @ts-ignore
+  const filteredUsers: User[] = users.filter((user) => user != null)!;
+  const participants = filteredUsers.map((user) => {
+    const role = dbChat.participants.find((parti) => parti.userRef.id == user.uid)!.role;
+    return { ...user, role };
+  });
 
   return { ...dbChat, participants, id: docId };
 };

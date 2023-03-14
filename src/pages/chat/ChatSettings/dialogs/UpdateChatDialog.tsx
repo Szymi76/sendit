@@ -13,7 +13,7 @@ const UpdateChatDialog = ({ open, onClose }: { open: boolean; onClose: () => voi
 
   // AKTUALIZOWANIE CZATU
   const handleUpdateChat = async () => {
-    await updateChat(chat!.id, updateValues.name, updateValues.photoURL);
+    await updateChat(chat.id, { newName: updateValues.name, newPhoto: updateValues.photoURL });
     onClose();
   };
 

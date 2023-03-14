@@ -20,8 +20,7 @@ export const FriendsProvider = ({ children }: FriendsProviderProps) => {
   const fetchFriends = useCallback(async () => {
     if (!currentUser) return;
 
-    const friendsUids = currentUser.friends;
-    const friends = await fetchUsersWithIds(friendsUids);
+    const friends = await fetchUsersWithIds(currentUser.friendsUids);
     useChat.setState({ friends });
   }, [currentUser]);
 

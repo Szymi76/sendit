@@ -1,11 +1,11 @@
 import { uuidv4 } from "@firebase/util";
-import { addDoc, deleteDoc, getDocs, Timestamp, updateDoc } from "firebase/firestore";
+import { addDoc, deleteDoc, DocumentReference, getDocs, Timestamp, updateDoc } from "firebase/firestore";
 import produce from "immer";
 import { StateCreator } from "zustand";
 
 import uploadFile from "../../../firebase/utils/uploadFile";
-import { db_Chat, db_Message } from "../types/database";
-import { ChatRolesArray } from "../types/other";
+import { db_Chat, db_Message, db_User } from "../types/database";
+import { ChatRole } from "../types/other";
 import { ChatsSlice, UseChatType } from "../types/slices";
 import refs from "../utils/refs";
 
@@ -35,6 +35,11 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   //
+  messages: new Map(),
+  //
+  //
+  //
+  //
   subscribe: (id) => set({ subscribingTo: id }),
   //
   //
@@ -57,14 +62,14 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   createChat: async (ids, type, name, photo) => {
     const currentUser = get().currentUser!;
 
-    const roles: ChatRolesArray = ids.map((id) => {
-      return { uid: id, role: currentUser.uid == id ? "owner" : "user" };
+    const participants = ids.map((id) => {
+      const role: ChatRole = id == currentUser.uid ? "owner" : "user";
+      return { userRef: refs.users.doc(id), role };
     });
 
     const newChat: db_Chat = {
-      participants: ids.map((uid) => refs.users.doc(uid)),
-      participantsIdsAsString: ids.join(","),
-      roles,
+      participants,
+      participantsUids: ids,
       type,
       name,
       photoURL: null,
@@ -90,25 +95,53 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
     });
 
     get().subscribeQueue(id);
+
+    return id;
   },
   //
   //
   //
   //
-  updateChat: async (chatId, name, photo) => {
+  updateChat: async (chatId, { newName, newPhoto, newParticipants }) => {
     const chat = get().getChatById(chatId);
-
-    if (!chat) throw new Error("Can't update not existing chat");
+    const currentUser = get().currentUser;
+    if (!chat || !currentUser) throw new Error("Can't update not existing chat or user in not logged in");
 
     // sprawdzanie czy dodać do aktualizacji nazwę czatu
-    const updateObject: { name?: string; photoURL?: string } = {};
-    if (name && name.length > 3 && name.length < 16) updateObject.name = name;
+    const updateObject: {
+      name?: string;
+      photoURL?: string;
+      participants?: { userRef: DocumentReference<db_User>; role: ChatRole }[];
+      participantsUids?: string[];
+    } = {};
+    if (newName && newName.length > 3 && newName.length < 16) updateObject.name = newName;
 
     // sprawdzanie czy dodać do aktualizacji zdjęcie czatu
-    if (typeof photo == "string") updateObject.photoURL = photo;
-    else if (photo) {
-      const url = await uploadFile(await photo.arrayBuffer(), "chats/main", uuidv4());
+    if (typeof newPhoto == "string") updateObject.photoURL = newPhoto;
+    else if (newPhoto) {
+      const url = await uploadFile(await newPhoto.arrayBuffer(), "chats/main", uuidv4());
       updateObject.photoURL = url;
+    }
+
+    // sprawdzanie czy do aktualizacji dodać nowych uczestników
+
+    // sprawdzanie czy:
+    // - aktualnie zalogowany użytkownik ma prawo do zmiany uczestników
+    // - właściciel nie opuszcza czatu
+    // - właściciel nie został zmieniony
+    if (newParticipants) {
+      const currentUserRole = get().getUserRole(currentUser.uid, chatId);
+      if (currentUserRole == "user") throw new Error("You don't have permission to chnage participants");
+      if (!newParticipants.some((user) => user.role == "owner")) throw new Error("You can't leave chat as owner");
+      const primaryOwner = chat.participants.find((user) => user.role == "owner")!;
+      const newOwner = newParticipants.find((user) => user.role == "owner")!;
+      if (primaryOwner.uid != newOwner.uid) throw new Error("Owner can't be changed");
+
+      const participants = newParticipants.map((user) => {
+        return { userRef: refs.users.doc(user.uid), role: user.role };
+      });
+      updateObject.participants = participants;
+      updateObject.participantsUids = newParticipants.map((p) => p.uid);
     }
 
     await updateDoc(refs.chats.doc(chatId), updateObject);
@@ -181,11 +214,6 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   //
-  messages: new Map(),
-  //
-  //
-  //
-  //
   mergeMessages: (chatId, ...messages) => {
     set(
       produce<UseChatType>((state) => {
@@ -205,39 +233,24 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
   //
   //
   //
-  changeChatRoles: async (chatId, newRolesArray) => {
+  getUserRole: (uid, chatId, defaultRole = "user") => {
     const chat = get().getChatById(chatId);
 
-    if (!chat) throw new Error("Can't change roles to not existing chat");
+    if (!chat) return "user";
 
-    const currentUser = get().currentUser!;
-    const currentUserRole = get().getUserRole(currentUser.uid, chatId);
-    if (currentUserRole != "owner") throw new Error("Only owner can change roles");
+    const user = chat.participants.find((user) => user.uid == uid);
 
-    const roles = chat.roles;
-    const isMoreThenOneOwner = roles.filter((item) => item.role == "owner").length > 1;
-    const owner = roles.find((item) => item.role == "owner");
-    const newOwner = newRolesArray.find((item) => item.role == "owner");
-    const isOwnerHaveBeenChanged = owner && newOwner && owner.uid != newOwner.uid;
-
-    if (isMoreThenOneOwner || isOwnerHaveBeenChanged)
-      throw new Error("Owner have been changed or there is more then one");
-
-    const chatRef = refs.chats.doc(chat.id);
-    await updateDoc(chatRef, { roles: newRolesArray });
+    if (!user) return defaultRole;
+    return user.role;
   },
   //
   //
   //
   //
-  getUserRole: (uid, chatId, defaultRole = "user") => {
-    const chat = get().getChatById(chatId);
+  getChatName: (chat) => {
+    if (chat.type == "group") return chat.name;
 
-    if (!chat) throw new Error("Can't get user role from not existing chat");
-
-    const user = chat.roles.find((val) => val.uid == uid);
-
-    if (!user) return defaultRole;
-    return user.role;
+    const otherUser = chat.participants.filter((parti) => parti?.uid != get().currentUser?.uid)[0];
+    return otherUser ? otherUser.displayName : chat.name;
   },
 });

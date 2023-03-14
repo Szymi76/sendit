@@ -32,12 +32,13 @@ const ChatSettings = () => {
   const currentChat = useChat((state) => state.currentChat)!;
   const getChatName = useChat((state) => state.getChatName);
   const currentUser = useChat((state) => state.currentUser)!;
+  const getUserRole = useChat((state) => state.getUserRole)!;
 
   const onClose = () => changeChatSettingsVisibilityTo(false);
   const onOpen = () => changeChatSettingsVisibilityTo(true);
 
   const prettyChatType = currentChat.type == "group" ? "grupowy" : "indywidualny";
-  const currentUserRole = currentChat.roles.find((val) => val.uid == currentUser.uid)!.role;
+  const currentUserRole = getUserRole(currentUser.uid, currentChat.id);
   const fabSx = { boxShadow: "none" };
 
   const handleSnackbarClose = () => setErrorSnackbar({ ...errorSnackbar, open: false });

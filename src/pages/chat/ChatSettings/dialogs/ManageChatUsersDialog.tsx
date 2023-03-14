@@ -21,30 +21,25 @@ import { useEffect, useMemo, useState } from "react";
 import AvatarV2 from "../../../../components/AvatarV2";
 import useChat from "../../../../hooks/useChat";
 import { User } from "../../../../hooks/useChat/types/client";
-import { ChatRole, ChatRolesArray } from "../../../../hooks/useChat/types/other";
+import { ChatRole } from "../../../../hooks/useChat/types/other";
 
 const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const [users, setUsers] = useState<string[]>([]);
-  const [roles, setRoles] = useState<ChatRolesArray>([]);
+  const [users, setUsers] = useState<{ uid: string; role: ChatRole; checked: boolean }[]>([]);
   const chat = useChat((state) => state.currentChat)!;
   const friends = useChat((state) => state.friends);
-  const changeChatParticipants = useChat((state) => state.changeChatParticipants);
-  const changeChatRoles = useChat((state) => state.changeChatRoles);
+  const updateChat = useChat((state) => state.updateChat);
   const getUserRole = useChat((state) => state.getUserRole);
   const currentUser = useChat((state) => state.currentUser)!;
 
   // ZMIANA UCZESTNIKÓW CZATU
   const handleChangeParticipants = async () => {
-    await changeChatParticipants(chat.id, users);
-    const currentUserRole = getUserRole(currentUser.uid, chat.id);
-    if (currentUserRole == "owner") await changeChatRoles(chat.id, roles);
+    const newParticipants = users
+      .filter((user) => user.checked)
+      .map((user) => {
+        return { uid: user.uid, role: user.role };
+      });
+    await updateChat(chat.id, { newParticipants });
     onClose();
-  };
-
-  // ZMIENIANIE UCZESTNICTWA UŻYTKOWNIKA
-  const handleToggleUser = (id: string) => {
-    const isIn = users.includes(id);
-    setUsers(isIn ? users.filter((str) => str != id) : [...users, id]);
   };
 
   // WSZYSCY UŻYTKOWNICY, KTÓRZY POJAWIĄ SIĘ W LIŚCIE (participants + firends)
@@ -53,7 +48,7 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
     const all: User[] = [...chat.participants, ...friends];
     const ids = Array.from(new Set(all.map((user) => user.uid)));
     return ids.map((id) => all.find((user) => user.uid == id)!);
-  }, [chat.participants, friends]);
+  }, [chat, friends]);
 
   // DOMYŚLNIE ZAZNACZENI UCZESTNICY
   const defaultCheckedUsers = useMemo(() => {
@@ -61,26 +56,50 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
     const selectedUsers = allPossibleUsers.filter((user) => ids.includes(user.uid));
     const selectedIds = selectedUsers.map((user) => user.uid);
     return { users: selectedUsers, ids: selectedIds };
-  }, [allPossibleUsers]);
+  }, [chat, allPossibleUsers]);
 
   // LICZBY OSÓB KTÓRE ZOSTANĄ dodane / usunięte
   const numberOfUsers = useMemo(() => {
-    const toAdd = users.filter((id) => !defaultCheckedUsers.ids.includes(id)).length;
-    const toRemove = defaultCheckedUsers.ids.filter((id) => !users.includes(id)).length;
+    const toAdd = users
+      .filter((user) => user.checked)
+      .filter((user) => !defaultCheckedUsers.ids.includes(user.uid)).length;
+    const toRemove = defaultCheckedUsers.ids.filter(
+      (id) =>
+        !users
+          .filter((user) => user.checked)
+          .map((u) => u.uid)
+          .includes(id),
+    ).length;
     return { toAdd, toRemove };
-  }, [allPossibleUsers, users]);
+  }, [users, allPossibleUsers]);
 
   // DOMYŚLNE USTAWIANIE ZAZNACZONYCH UŻYTKOWNIKÓW
   useEffect(() => {
-    setUsers(defaultCheckedUsers.ids);
-    setRoles(chat.roles);
-  }, [chat.participants, chat.roles]);
+    const initialUsers = allPossibleUsers.map((user) => {
+      const checked = defaultCheckedUsers.ids.includes(user.uid);
+      const role = getUserRole(user.uid, chat.id);
+      return { uid: user.uid, role, checked };
+    });
+    setUsers(initialUsers);
+  }, [chat]);
 
   // ZMIENIA ROLĘ UŻYTKOWNIKA
-  const handleChangeRole = (e: SelectChangeEvent<ChatRole>, user: User) => {
+  const handleChangeRole = (e: SelectChangeEvent<ChatRole>, uid: string) => {
     // @ts-ignore
-    setRoles((roles) => {
-      return roles.map((item) => (item.uid == user.uid ? { uid: item.uid, role: e.target.value } : item));
+    setUsers((users) => {
+      return users.map((user) => {
+        return user.uid == uid ? { ...user, role: e.target.value } : user;
+      });
+    });
+  };
+
+  // ZMIENIANIE UCZESTNICTWA UŻYTKOWNIKA
+  const handleToggleUser = (uid: string) => {
+    const checked = users.find((user) => user.uid == uid)!.checked;
+    setUsers((users) => {
+      return users.map((user) => {
+        return user.uid == uid ? { ...user, checked: !checked } : user;
+      });
     });
   };
 
@@ -94,17 +113,14 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
           znajomym.
         </DialogContentText>
         <List>
-          {allPossibleUsers.map((user) => {
+          {users.map((user) => {
             if (!user) return <></>;
 
-            // ROLA UŻYTKOWNIKA
-            const roleObject = roles.find((val) => val.uid == user.uid);
-            const role = roleObject ? roleObject.role : "user";
-
             const isCurrentUserOwner = getUserRole(currentUser.uid, chat.id) == "owner";
-            const isChecked = users.includes(user.uid);
             const isDisabled =
-              role == "owner" || currentUser.uid == user.uid || (role == "admin" && !isCurrentUserOwner);
+              user.role == "owner" || currentUser.uid == user.uid || (user.role == "admin" && !isCurrentUserOwner);
+
+            const userValues = allPossibleUsers.find((val) => val.uid == user.uid)!;
 
             return (
               <ListItem
@@ -112,16 +128,20 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
                 disablePadding
                 secondaryAction={
                   <>
-                    <Checkbox onChange={() => handleToggleUser(user.uid)} checked={isChecked} disabled={isDisabled} />
-                    <SelectRole value={role} onChange={(e) => handleChangeRole(e, user)} role={role} />
+                    <Checkbox
+                      onChange={() => handleToggleUser(user.uid)}
+                      checked={user.checked}
+                      disabled={isDisabled}
+                    />
+                    <SelectRole value={user.role} onChange={(e) => handleChangeRole(e, user.uid)} />
                   </>
                 }
               >
                 <ListItemButton>
                   <ListItemAvatar>
-                    <AvatarV2 name={user.displayName} src={user.photoURL} />
+                    <AvatarV2 name={userValues.displayName} src={userValues.photoURL} />
                   </ListItemAvatar>
-                  <ListItemText primary={user.displayName} />
+                  <ListItemText primary={userValues.displayName} />
                 </ListItemButton>
               </ListItem>
             );
@@ -146,21 +166,13 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
 
 export default ManageChatUsersDialog;
 
-const SelectRole = ({
-  value,
-  onChange,
-  role,
-}: {
-  value: ChatRole;
-  onChange: (e: SelectChangeEvent<ChatRole>) => void;
-  role: ChatRole;
-}) => {
+const SelectRole = ({ value, onChange }: { value: ChatRole; onChange: (e: SelectChangeEvent<ChatRole>) => void }) => {
   const currentUser = useChat((state) => state.currentUser)!;
   const currentChat = useChat((state) => state.currentChat)!;
   const getUserRole = useChat((state) => state.getUserRole);
 
   const currentUserRole = getUserRole(currentUser.uid, currentChat.id);
-  const isUserOwner = role == "owner";
+  const isUserOwner = value == "owner";
 
   return (
     <Select

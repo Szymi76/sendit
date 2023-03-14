@@ -1,5 +1,5 @@
 import { Chat, Message, User } from "./client";
-import { ChatRole, ChatRolesArray, ChatType } from "./other";
+import { ChatRole, ChatType } from "./other";
 
 export type UsersSlice = {
   /**
@@ -24,18 +24,6 @@ export type UsersSlice = {
    * @returns Zwraca użytkownika na podstawie `id`. Jeśli użytkownik nie istnieje zwraca `null`.
    */
   getUserById: (id: string) => Promise<User | null>;
-  /**
-   * @param chat czat
-   * @returns Zwraca nazwę czatu na podstawie tego czy czat jest indywidualny lub grupowy.
-   */
-  getChatName: (chat: Chat) => string;
-  /**
-   *
-   * @param chatId id czatu
-   * @param newParticipantsIds nowa tablica id użytkowników
-   * @description Zmienia uczestników czatu.
-   */
-  changeChatParticipants: (chatId: string, newParticipantsIds: string[]) => Promise<void>;
 };
 
 export type ChatsSlice = {
@@ -44,21 +32,10 @@ export type ChatsSlice = {
    */
   chats: Chat[];
   /**
-   *
-   * @param chatId id czatu
-   * @returns Zwraca wiadomości w postaci `Message[]` lub `[]` w przypadku braku czatu.
-   */
-  getMessagesWithChatId: (chatId: string) => Message[];
-  /**
    * Zwraca aktualnie subskrybowany czat.
    */
   currentChat: Chat | null;
-  /**
-   *
-   * @param id id czatu
-   * @returns Zwraca czat jeśli istnieje w innym przypadku `null`.
-   */
-  getChatById: (id: string) => Chat | null;
+
   /**
    * Aktualnie subskrybowany czat w postaci `id` czatu, jeśli żaden czat nie jest subskrybowany to wartość przyjmuje wartość `null`.
    */
@@ -69,19 +46,33 @@ export type ChatsSlice = {
    * pobrany przez funkcję `onSnapshot`.
    */
   subscriptionInQueue: string | null;
+
   /**
-   *
-   * @param chatId id czatu do którego mają zostać dodane wiadomośći
-   * @param messages tablica wiadomości
-   * @description Rozszerza, konkretny czat o wiadomości.
+   * Zmiana na `true` powoduje pobranie większej ilości wiadomości, po pobraniu wartość zmieniana jest na `false`.
    */
-  // addMessagesToChatWithId: (chatId: string, messages: Message[]) => void;
+  fetchMoreMessages: boolean;
+  /**
+   * Mapa przechowuje wiadomości czatu na podstawie id.
+   */
+  messages: Map<string, Message[]>;
   /**
    *
    * @param id id czatu który chcemy dodać do kolejki
    * @description Dodaje `id` czatu do kolejki.
    */
   subscribeQueue: (id: string | null) => void;
+  /**
+   *
+   * @param id id czatu
+   * @returns Zwraca czat jeśli istnieje w innym przypadku `null`.
+   */
+  getChatById: (id: string) => Chat | null;
+  /**
+   *
+   * @param chatId id czatu
+   * @returns Zwraca wiadomości w postaci `Message[]` lub `[]` w przypadku braku czatu.
+   */
+  getMessagesWithChatId: (chatId: string) => Message[];
   /**
    *
    * @param id id czatu który chcemy subskrybować
@@ -96,7 +87,7 @@ export type ChatsSlice = {
    * @param photo zdjęcie
    * @description Tworzy nowy czat. Automatycznie dodaje `id` nowego czatu do kolejki.
    */
-  createChat: (ids: string[], type: ChatType, name: string, photo?: string | File) => Promise<void>;
+  createChat: (ids: string[], type: ChatType, name: string, photo?: string | File) => Promise<string>;
   /**
    *
    * @param chatId id czatu do którego wysyłamy wiadomość
@@ -112,23 +103,20 @@ export type ChatsSlice = {
    * @param photo nowe zdjęcie
    * @description Aktualizuje czat.
    */
-  updateChat: (chatId: string, name?: string, photo?: string | File | null) => Promise<void>;
+  updateChat: (
+    chatId: string,
+    toUpdate: {
+      newName?: string;
+      newPhoto?: string | File | null;
+      newParticipants?: { uid: string; role: ChatRole }[];
+    },
+  ) => Promise<void>;
   /**
    *
    * @param chatId id czatu
    * @description Usuwa czat i wszystkie jego wiadomości.
    */
   deleteChat: (chatId: string) => Promise<void>;
-  /**
-   * Powoduje pobranie większej ilości wiadomości.
-   */
-  fetchMoreMessages: boolean;
-
-  /**
-   * Mapa przechowuje wiadomości czatu na podstawie id.
-   */
-  messages: Map<string, Message[]>;
-
   /**
    *
    * @param chatId id czatu
@@ -138,19 +126,17 @@ export type ChatsSlice = {
   mergeMessages: (chatId: string, ...messages: Message[]) => void;
   /**
    *
-   * @param chatId id czatu
-   * @param newRolesArray tablica nowych rol uczestników
-   * @description Zmienia role uczestników danego czatu. Dostępne role: `owner`, `admin` i `user`.
-   */
-  changeChatRoles: (chatId: string, newRolesArray: ChatRolesArray) => Promise<void>;
-  /**
-   *
    * @param uid id użytkownika
    * @param chatId id czatu
    * @param defaultRole rola, która zostanie zwrócona, jeśli użytkownika nie ma w podanym czacie
    * @returns Zwraca role użytkownika w czacie
    */
   getUserRole: (uid: string, chatId: string, defaultRole?: ChatRole) => ChatRole;
+  /**
+   * @param chat czat
+   * @returns Zwraca nazwę czatu na podstawie tego czy czat jest indywidualny lub grupowy.
+   */
+  getChatName: (chat: Chat) => string;
 };
 
 export type State = { isLoading: boolean; isError: boolean };

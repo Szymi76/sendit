@@ -19,6 +19,8 @@ const Chat = () => {
 
   const showChatRoom = !isCreateNewChatVisible && currentChat;
 
+  console.log(useChat());
+
   return (
     <Wrapper>
       <ChatNav />

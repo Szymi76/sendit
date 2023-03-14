@@ -74,7 +74,7 @@ export default Search;
 
 const UserCard = ({ user }: { user: User }) => {
   const currentUser = useChat((state) => state.currentUser);
-  const isFriend = currentUser!.friends.includes(user.uid);
+  const isFriend = currentUser!.friendsUids.includes(user.uid);
   const toggleUserAsFriend = useChat((state) => state.toggleUserAsFriend);
 
   const handleClick = async () => await toggleUserAsFriend(user.uid);
