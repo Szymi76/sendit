@@ -131,7 +131,7 @@ export const chatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (set, g
     // - właściciel nie został zmieniony
     if (newParticipants) {
       const currentUserRole = get().getUserRole(currentUser.uid, chatId);
-      if (currentUserRole == "user") throw new Error("You don't have permission to chnage participants");
+      // if (currentUserRole == "user") throw new Error("You don't have permission to chnage participants");
       if (!newParticipants.some((user) => user.role == "owner")) throw new Error("You can't leave chat as owner");
       const primaryOwner = chat.participants.find((user) => user.role == "owner")!;
       const newOwner = newParticipants.find((user) => user.role == "owner")!;

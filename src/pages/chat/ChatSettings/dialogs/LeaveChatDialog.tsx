@@ -5,15 +5,12 @@ import useChat from "../../../../hooks/useChat";
 const LeaveChatDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const currentChat = useChat((state) => state.currentChat)!;
   const currentUser = useChat((state) => state.currentUser)!;
-  const changeChatParticipants = useChat((state) => state.changeChatParticipants);
+  const updateChat = useChat((state) => state.updateChat);
 
   // OPUSZCZANIE CZATU
   const handleLeaveChat = async () => {
-    // @ts-ignore
-    const participantsWithoutMe: string[] = currentChat.participants
-      .map((user) => (user ? user.uid : null))
-      .filter((uid) => uid !== null && uid != currentUser.uid);
-    await changeChatParticipants(currentChat.id, participantsWithoutMe);
+    const participantsWithoutMe = currentChat.participants.filter((user) => user.uid != currentUser.uid);
+    await updateChat(currentChat.id, { newParticipants: participantsWithoutMe });
     onClose();
   };
 
