@@ -5,7 +5,7 @@ import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
 import Chat from "./pages/chat";
 import Login from "./pages/login";
-import NotFound from "./pages/notFound";
+import NotFound from "./pages/notFound/index";
 import Register from "./pages/register";
 
 const App = () => {
