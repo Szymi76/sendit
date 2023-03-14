@@ -40,9 +40,11 @@ Lista najważniejszych frameworków/bibliotek, którymi została zbudowana aplik
 
 2. Utworznie projektu firebase. [Tutaj](https://console.firebase.google.com/) możesz go utworzyć.
 
-2. Uzupełnienie pliku `.env` ze wcześniej utworzonego projektu.
+3. W zakładce `Build` włączyć `Authentication` z logowaniem za pomocą emailu i hasła, `Firestore Database`, a następnie w `Rules` zmienić ostatnie `false` na `true` oraz `Storage`, a następnie w `Rules` zmienić ostatnie `false` na `true`.
 
-4. Wystartowanie serwera.
+4. Stwórz plik `.env`, wklej do niego zawartość pliku `.example.env`, a następnie ze uzupełnij go danymi ze wcześniej utworzonego projektu firebase.
+
+5. Wystartowanie serwera.
 
 ```sh
    npm run dev
