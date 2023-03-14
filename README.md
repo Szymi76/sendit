@@ -20,7 +20,7 @@ Aplikacja umożliwia:
 
 ### Zbudowana za pomocą
 
-This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
+Lista najważniejszych frameworków/bibliotek, którymi została zbudowana aplikacja.
 
 * ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 * ![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
