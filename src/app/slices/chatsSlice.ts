@@ -79,7 +79,7 @@ export const createChatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (
     };
 
     // informacja o rozpoczęciu tworzenia czatu
-    get().updateStates({ creatingChat: { isLoading: true, isError: false } });
+    get().updateStatuses({ creatingChat: { isLoading: true, isError: false } });
 
     const { id } = await addDoc(refs.chats.col, newChat);
 
@@ -175,7 +175,7 @@ export const createChatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (
     if (!currentUser) throw new Error("Can't send message as not logged in user");
 
     // informacja o rozpoczęciu wysyłania
-    get().updateStates({ sendingMessage: { isLoading: true, isError: false } });
+    get().updateStatuses({ sendingMessage: { isLoading: true, isError: false } });
 
     const filesUrls: string[] = [];
     if (files) {
@@ -201,7 +201,7 @@ export const createChatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (
     await addDoc(refs.messages.col(chatId), newMessage);
 
     // informacja o zakończeniu wysyłania
-    get().updateStates({ sendingMessage: { isLoading: false, isError: false } });
+    get().updateStatuses({ sendingMessage: { isLoading: false, isError: false } });
   },
   //
   //

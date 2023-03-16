@@ -19,5 +19,5 @@ export const createStatusesSlice: StateCreator<UseChatType, [], [], StatusesSlic
   //
   //
   //
-  updateStates: (statesToUpdate) => set(statesToUpdate),
+  updateStatuses: (statesToUpdate) => set(statesToUpdate),
 });

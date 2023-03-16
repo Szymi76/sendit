@@ -156,7 +156,7 @@ export type StatusesSlice = {
   /**
    * Aktualizuje wybrany stan
    */
-  updateStates: (statesToUpdate: Partial<StatusesSlice>) => void;
+  updateStatuses: (statesToUpdate: Partial<StatusesSlice>) => void;
 };
 
 export type StatesSlice = {

@@ -19,7 +19,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
   const subscribeQueue = useChat((state) => state.subscribeQueue);
   const subscriptionInQueue = useChat((state) => state.subscriptionInQueue);
   const getChatById = useChat((state) => state.getChatById);
-  const updateStates = useChat((state) => state.updateStates);
+  const updateStatuses = useChat((state) => state.updateStatuses);
   const subscribingTo = useChat((state) => state.subscribingTo);
 
   // zajmuję się kolekjowanie i subskrybowaniem czatu.
@@ -31,7 +31,7 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
 
     subscribe(subscriptionInQueue);
     subscribeQueue(null);
-    updateStates({ creatingChat: { isLoading: false, isError: false } });
+    updateStatuses({ creatingChat: { isLoading: false, isError: false } });
   }, [chats, subscriptionInQueue]);
 
   // zajmuje się aktualizowaniem wartości `currentChat`.

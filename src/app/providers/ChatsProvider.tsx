@@ -18,7 +18,7 @@ export type ChatsProviderProps = { children: React.ReactNode };
  */
 export const ChatsProvider = ({ children }: ChatsProviderProps) => {
   const { user, isLoading } = useAuth();
-  const updateStates = useChat((state) => state.updateStates);
+  const updateStatuses = useChat((state) => state.updateStatuses);
 
   useEffect(() => {
     if (isLoading || !user) return;
@@ -29,7 +29,7 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
       const chats: Chat[] = [];
 
       // informacja o rozpoczęciu pobierania
-      updateStates({ fetchingChats: { isLoading: true, isError: false } });
+      updateStatuses({ fetchingChats: { isLoading: true, isError: false } });
 
       // pętla konwertująca każdy czat
       for (let i = 0; i < snapshot.docs.length; i++) {
@@ -53,7 +53,7 @@ export const ChatsProvider = ({ children }: ChatsProviderProps) => {
       }
 
       // informacja o zakończeniu pobierania
-      updateStates({ fetchingChats: { isLoading: false, isError: false } });
+      updateStatuses({ fetchingChats: { isLoading: false, isError: false } });
 
       // aktualizowanie czatów
       useChat.setState({ chats });
