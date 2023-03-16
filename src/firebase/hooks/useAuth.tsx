@@ -21,6 +21,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
+// HOOK Z AKTUALNIE ZALOGOWANYM UŻYTKOWNIKIEM ORAZ STATUSEM 'isLoading', KTÓRY MÓWI O TYM CZY UŻYTKOWNIK JEST/LUB ZOSTAŁ SPRAWDZONY
+// I MOŻNA DOKONAĆ ROUTÓW NA PODSTAWIE TEGO CZY UŻYTKOWNIK JEST LUB NIE JEST ZALOGOWANY
 const useAuth = () => {
   const context = useContext(AuthContext)!;
   return context;

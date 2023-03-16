@@ -1,13 +1,13 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Box, styled, Typography } from "@mui/material";
 
+import { useChat, useStates } from "../../../app/stores";
 import IconAsButton from "../../../components/IconAsButton";
-import useChat from "../../../hooks/useChat";
-import { CHAT_ROOM_HEADER_SPACING } from "../constants";
-import { useStates } from "../states";
-import BottomTextField from "./components/BottomTextField";
-import Messages from "./components/Messages";
+import { CHAT_ROOM_HEADER_SPACING } from "../../../constants";
+import BottomTextField from "../../../features/ChatRoom/BottomTextField";
+import Messages from "../../../features/ChatRoom/Messages";
 
+// POKÓJ AKTUALNIE SUBSKRYBOWANEGO CZATU Z 'HEADEREM', 'WIADOMOŚCIAMI' I POLEM TEKSTOWYM NA SAMYM DOLE
 const ChatRoom = () => {
   const changeChatSettingsVisibilityTo = useStates((state) => state.changeChatSettingsVisibilityTo);
   const currentChat = useChat((state) => state.currentChat)!;

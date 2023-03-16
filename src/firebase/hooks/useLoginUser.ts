@@ -13,6 +13,7 @@ interface Status {
   error: null | Error;
 }
 
+// HOOK DO LOGOWANIA UŻYTKOWNIKA ZA POMOCĄ EMAILU I HASŁA
 const useLoginUser = () => {
   const [status, setStatus] = useState<Status>({ isLoading: false, error: null });
 

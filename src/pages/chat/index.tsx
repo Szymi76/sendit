@@ -1,15 +1,14 @@
 import { Box, styled } from "@mui/material";
 
-import useChat from "../../hooks/useChat";
+import { useChat, useStates } from "../../app/stores";
+import { CHAT_LIST_WIDTH } from "../../constants";
 import ChatList from "./ChatList";
+import ChatNav from "./ChatNav";
 import ChatRoom from "./ChatRoom";
 import ChatSettings from "./ChatSettings";
-import { CHAT_LIST_WIDTH } from "./constants";
 import CreateNewChat from "./CreateNewChat";
-import ChatNav from "./Nav";
-import Search from "./Search";
-import Settings from "./Settings";
-import { useStates } from "./states";
+import Search from "./SearchForFriends";
+import Settings from "./UserSettings";
 
 const Chat = () => {
   const isChatListVisible = useStates((state) => state.isChatListVisible);
@@ -18,8 +17,6 @@ const Chat = () => {
   const currentUser = useChat((state) => state.currentUser);
 
   const showChatRoom = !isCreateNewChatVisible && currentChat;
-
-  console.log(useChat());
 
   return (
     <Wrapper>

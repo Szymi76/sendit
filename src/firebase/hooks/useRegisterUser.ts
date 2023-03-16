@@ -1,10 +1,10 @@
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { setDoc } from "firebase/firestore";
 import { useState } from "react";
 
+import { db_User } from "../../types/database";
 import { auth } from "../index";
-import createDocument from "../utils/createDocument";
-
-const DEFAULT_PHOTO_URL = "https://sendbird.com/main/img/profiles/profile_05_512px.png";
+import refs from "../utils/refs";
 
 interface CreateUserTypes {
   displayName: string;
@@ -17,6 +17,7 @@ interface Status {
   error: null | Error;
 }
 
+// HOOK DO TWORZENIA UŻYTKOWNIKA
 const useRegisterUser = () => {
   const [status, setStatus] = useState<Status>({ isLoading: false, error: null });
 
@@ -27,19 +28,20 @@ const useRegisterUser = () => {
 
       // tworzernie użytkownika w firebase i aktualizacja danych
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(user, { displayName, photoURL: DEFAULT_PHOTO_URL });
+      await updateProfile(user, { displayName });
 
-      const userObject = {
+      const userObject: db_User = {
         uid: user.uid,
         displayName,
         email,
-        photoURL: DEFAULT_PHOTO_URL,
+        photoURL: null,
         friendsUids: [],
         chatsIds: [],
       };
 
       // dodawanie użytkownika do bazy danych
-      await createDocument("users", user.uid, userObject);
+      const newUserRef = refs.users.doc(user.uid);
+      await setDoc(newUserRef, userObject);
 
       // status w przypadku sukcesu
       setStatus({ isLoading: false, error: null });

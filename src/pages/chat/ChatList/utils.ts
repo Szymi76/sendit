@@ -1,9 +1,10 @@
-import { Chat, Message } from "../../../hooks/useChat/types/client";
-import { ChatType } from "../../../hooks/useChat/types/other";
+import { Chat, Message } from "../../../types/client";
+import { ChatType } from "../../../types/other";
 
 export type Filter = ChatType | "recent";
 
-// filtrowanie chatów w liście, których nazwa nawiera podane zapytanie lub któryś z uczesników zawiera podane zapytanie
+// FILTROWANIE CZATÓW NA PODSTAWIE TEGO CZY NAZWA CZATU ZAWIERA 'ZAPYTANIE' LUB KTÓRYŚ Z UCZESTNIKÓW ZAWIRA 'ZAPYTANIE'
+// NASTĘPNIE CHATY SĄ SORTOWANE PO OSTATNIO WYSŁANEJ WIADOMOŚCI
 export const filterChats = (chats: Chat[], query: string, messages: Map<string, Message[]>, type?: Filter) => {
   let array = chats.filter((chat) => {
     const a = chat.name.toLocaleLowerCase().includes(query);

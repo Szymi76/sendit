@@ -1,16 +1,17 @@
 import TryIcon from "@mui/icons-material/Try";
 import { Autocomplete, Box, styled, TextField, Typography } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
 import { useState } from "react";
 
-import AvatarV2 from "../../../components/AvatarV2";
+import { useChat, useStates } from "../../../app/stores";
 import FileInput from "../../../components/FileInput";
 import IconAsButton from "../../../components/IconAsButton";
-import useChat from "../../../hooks/useChat";
-import { CHAT_ROOM_HEADER_SPACING } from "../constants";
-import { useStates } from "../states";
-import { DataType, Errors, OptionItem, validateNameField, validateParticipantsField } from "./utils";
+import { CHAT_ROOM_HEADER_SPACING } from "../../../constants";
+import { User } from "../../../types/client";
+import AutocompleteOption from "./components/AutocompleteOption";
+import CreatingNewChat from "./components/CreatingNewChat";
+import { DataType, Errors, validateNameField, validateParticipantsField } from "./utils";
 
+// KOMPONENT DO TWORZENIA NOWEGO CZATU
 const CreateNewChat = () => {
   const [data, setData] = useState<DataType>({ name: "", participants: [], photoURL: null });
   const [errors, setErrors] = useState<Errors>({ name: null, participants: null, active: false });
@@ -39,12 +40,8 @@ const CreateNewChat = () => {
     changeCreateNewChatVisibilityTo(false);
   };
 
-  const options: OptionItem[] = friends.map(({ uid, displayName }) => {
-    return { label: displayName, uid };
-  });
-
   // onChange dla uczestników czatu
-  const handleParticipantsChange = (e: any, value: OptionItem[]) => {
+  const handleParticipantsChange = (e: any, value: User[]) => {
     setData({ ...data, participants: value });
     const fieldError = validateParticipantsField(value);
     errors.active && setErrors({ ...errors, participants: fieldError });
@@ -70,11 +67,12 @@ const CreateNewChat = () => {
       <Box display="flex" flexDirection="column" gap={4} p={3} maxWidth={550}>
         <Autocomplete
           multiple
-          options={options}
+          options={friends}
           onChange={handleParticipantsChange}
           value={data.participants}
+          getOptionLabel={(option) => option.displayName}
           isOptionEqualToValue={(option, value) => option.uid == value.uid}
-          renderOption={(props, option) => <Option key={option.uid} props={props} option={option} />}
+          renderOption={(props, option) => <AutocompleteOption key={option.uid} props={props} option={option} />}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -103,7 +101,7 @@ const CreateNewChat = () => {
           />
         </Box>
       </Box>
-      {creatingChat.isLoading && <Loading />}
+      {creatingChat.isLoading && <CreatingNewChat />}
     </Wrapper>
   );
 };
@@ -134,32 +132,3 @@ const HeaderText = styled(Typography)(({ theme }) => ({
   fontSize: 28,
   fontWeight: 500,
 }));
-
-const Option = ({ props, option }: { props: React.HTMLAttributes<HTMLLIElement>; option: OptionItem }) => {
-  const friends = useChat((state) => state.friends);
-  const user = friends.find((user) => user.uid == option.uid)!;
-
-  return (
-    <li {...props} style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-      <AvatarV2 name={user.displayName} src={user.photoURL} />
-      <Typography>{option.label}</Typography>
-    </li>
-  );
-};
-
-const Loading = () => {
-  return (
-    <Box
-      position="fixed"
-      width="100%"
-      height="100%"
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      sx={{ bgcolor: "rgba(0,0,0,0.2)" }}
-      zIndex={2000}
-    >
-      <CircularProgress color="primary" size={60} />
-    </Box>
-  );
-};

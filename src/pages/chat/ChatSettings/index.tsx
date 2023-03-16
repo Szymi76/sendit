@@ -7,18 +7,18 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import { Alert, Box, Snackbar, styled, SwipeableDrawer, Typography } from "@mui/material";
 import { useState } from "react";
 
+import { useChat, useStates } from "../../../app/stores";
 import AvatarV2 from "../../../components/AvatarV2";
 import IconAsButton from "../../../components/IconAsButton";
-import useChat from "../../../hooks/useChat";
+import { CHAT_ROOM_HEADER_SPACING, CHAT_SETTINGS_WIDTH, NAV_SPACING } from "../../../constants";
+import DeleteChatDialog from "../../../features/ChatSettings/DeleteChatDialog";
+import LeaveChatDialog from "../../../features/ChatSettings/LeaveChatDialog";
+import ManageChatUsersDialog from "../../../features/ChatSettings/ManageChatUsersDialog";
+import UpdateChatDialog from "../../../features/ChatSettings/UpdateChatDialog";
 import useToggle from "../../../hooks/useToggle";
-import { CHAT_ROOM_HEADER_SPACING, CHAT_SETTINGS_WIDTH, NAV_SPACING } from "../constants";
-import { useStates } from "../states";
 import Participants from "./components/Participants";
-import DeleteChatDialog from "./dialogs/DeleteChatDialog";
-import LeaveChatDialog from "./dialogs/LeaveChatDialog";
-import ManageChatUsersDialog from "./dialogs/ManageChatUsersDialog";
-import UpdateChatDialog from "./dialogs/UpdateChatDialog";
 
+// USTWAIENIA CZATU WYŚWIETLANE PO PRAWEJ STRONIE
 const ChatSettings = () => {
   const [isDeleteChatDialogVisible, toggleDeleteChatDialogVisibility] = useToggle();
   const [isUpdateChatDialogVisible, toggleUpdateChatDialogVisibility] = useToggle();
@@ -84,7 +84,7 @@ const ChatSettings = () => {
             <ChatIcon /> Rodzaj czatu - {prettyChatType}
           </Typography>
 
-          <Participants />
+          <Participants chat={currentChat} />
 
           {currentChat.type == "group" && (
             <Footer>

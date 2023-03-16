@@ -1,8 +1,9 @@
-export type OptionItem = { label: string; uid: string };
-export type Errors = { name: string | null; participants: string | null; active: boolean };
-export type DataType = { name: string; participants: OptionItem[]; photoURL: File | null };
+import { User } from "../../../types/client";
 
-// sprawdza czy nazwa nowgo czatu jest prawidłowa
+export type Errors = { name: string | null; participants: string | null; active: boolean };
+export type DataType = { name: string; participants: User[]; photoURL: File | null };
+
+// SPRAWDZA CZY NAZWA CZATU JEST OKEJ
 export const validateNameField = (name: string) => {
   if (name.length == 0) return "Nazwa czatu jest wymagana";
   else if (name.length < 4) return "Nazwa czatu jest za krótka";
@@ -10,8 +11,8 @@ export const validateNameField = (name: string) => {
   else return null;
 };
 
-// sprawdza czy lista uczestników nowego czatu jest okej
-export const validateParticipantsField = (participants: OptionItem[]) => {
+// SPRAWDZA CZY LISTA UCZESTNIKÓW JEST OKEJ
+export const validateParticipantsField = (participants: User[]) => {
   if (participants.length < 1) return "Wymaganych jest co najmniej 1 uczestnik";
   else return null;
 };

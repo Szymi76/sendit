@@ -1,8 +1,8 @@
 import { updateProfile } from "firebase/auth";
 import { updateDoc } from "firebase/firestore";
 
-import refs from "../../hooks/useChat/utils/refs";
 import { auth } from "..";
+import refs from "./refs";
 import uploadFile from "./uploadFile";
 
 export type UpdateUserArgs = { displayName?: string; photoURL?: string | File | null };

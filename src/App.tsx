@@ -3,10 +3,10 @@ import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import * as Access from "./layouts/Access";
 import Layout from "./layouts/Layout";
-import Chat from "./pages/chat";
-import Login from "./pages/login";
-import NotFound from "./pages/NotFound/index";
-import Register from "./pages/register";
+import Chat from "./pages/Chat";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
 
 const App = () => {
   enableMapSet();

@@ -1,6 +1,6 @@
 import { Fab, FabProps, IconButton, IconButtonProps, Tooltip, TooltipProps } from "@mui/material";
 
-// IKONA JAKO PRZYCISK Z TYTUŁEM
+// IKONA JAKO PRZYCISK Z NAPISEM WYŚWIETLAJĄCYM SIĘ PO NAJECHANIU
 export type IconAsButtonProps = {
   icon: React.ReactNode;
   title: string;

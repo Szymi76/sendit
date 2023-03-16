@@ -12,6 +12,8 @@ export type FileInputProps = {
   sx?: SxProps<Theme>;
 };
 
+// INPUT TYPU 'file' Z CZYSZCZENIEM WYBRANEGO PLIKU
+// AKCEPTUJE TYLKO PLILI TYPU 'image'
 const FileInput = ({ file, textToRepleceFile, onFileChange, onFileClear, sx }: FileInputProps) => {
   if (file && typeof file != "string") file = URL.createObjectURL(file);
 
@@ -24,7 +26,7 @@ const FileInput = ({ file, textToRepleceFile, onFileChange, onFileClear, sx }: F
         ) : (
           <IconButton hidden component="label">
             <AddPhotoAlternateIcon />
-            <input type="file" hidden onChange={onFileChange} />
+            <input type="file" accept="image/*" hidden onChange={onFileChange} />
           </IconButton>
         )}
       </Fab>
