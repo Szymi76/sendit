@@ -18,6 +18,7 @@ const ChatList = () => {
   const fetchingChats = useChat((state) => state.fetchingChats);
   const messages = useChat((state) => state.messages);
   const getChatName = useChat((state) => state.getChatName);
+  const getChatPhoto = useChat((state) => state.getChatPhoto);
   const subscribe = useChat((state) => state.subscribe);
   const isChatListVisible = useStates((state) => state.isChatListVisible);
   const changeCreateNewChatVisibilityTo = useStates((state) => state.changeCreateNewChatVisibilityTo);
@@ -35,7 +36,7 @@ const ChatList = () => {
       const chatMessagesIsNotEmpty = Boolean(chatMessages && chatMessages.length > 0);
 
       const name = getChatName(chat);
-      const photo = chat.photoURL;
+      const photo = getChatPhoto(chat);
       const lastMessage = chatMessagesIsNotEmpty ? chatMessages![chatMessages!.length - 1].text : undefined;
       const handleSelect = () => {
         subscribe(chat.id);

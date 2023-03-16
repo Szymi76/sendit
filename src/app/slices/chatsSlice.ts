@@ -254,4 +254,14 @@ export const createChatsSlice: StateCreator<UseChatType, [], [], ChatsSlice> = (
     const otherUser = chat.participants.filter((parti) => parti?.uid != get().currentUser?.uid)[0];
     return otherUser ? otherUser.displayName : chat.name;
   },
+  //
+  //
+  //
+  //
+  getChatPhoto: (chat) => {
+    if (chat.type == "group") return chat.photoURL;
+
+    const otherUser = chat.participants.filter((parti) => parti?.uid != get().currentUser?.uid)[0];
+    return otherUser ? otherUser.photoURL : chat.photoURL;
+  },
 });

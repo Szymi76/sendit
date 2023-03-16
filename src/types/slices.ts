@@ -137,6 +137,12 @@ export type ChatsSlice = {
    * @returns Zwraca nazwę czatu na podstawie tego czy czat jest indywidualny lub grupowy.
    */
   getChatName: (chat: Chat) => string;
+  /**
+   *
+   * @param chat chat
+   * @returns Zwraca zdjęcie czatu na podstawie tego czy czat jest indywidualny lub grupowy.
+   */
+  getChatPhoto: (chat: Chat) => string | null;
 };
 
 export type Status = { isLoading: boolean; isError: boolean };

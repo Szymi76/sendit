@@ -31,6 +31,7 @@ const ChatSettings = () => {
   const changeChatSettingsVisibilityTo = useStates((state) => state.changeChatSettingsVisibilityTo);
   const currentChat = useChat((state) => state.currentChat)!;
   const getChatName = useChat((state) => state.getChatName);
+  const getChatPhoto = useChat((state) => state.getChatPhoto);
   const currentUser = useChat((state) => state.currentUser)!;
   const getUserRole = useChat((state) => state.getUserRole)!;
 
@@ -74,7 +75,7 @@ const ChatSettings = () => {
           />
         </Header>
         <Content>
-          <AvatarV2 name={currentChat.name} src={currentChat.photoURL} sx={{ height: 175, width: 175 }} />
+          <AvatarV2 name={currentChat.name} src={getChatPhoto(currentChat)} sx={{ height: 175, width: 175 }} />
 
           <Typography variant="h4" fontWeight={500}>
             {getChatName(currentChat)}
