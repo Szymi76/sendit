@@ -13,11 +13,16 @@ export const ColorModeContext = createContext<ColorModeContextTypes | null>(null
 export type ColorModeProviderProps = { children: React.ReactNode };
 
 export const MuiProvider = ({ children }: ColorModeProviderProps) => {
-  const [mode, setMode] = useState<ColorMode>("light");
+  const initialMode = localStorage.getItem("theme") as ColorMode;
+  const [mode, setMode] = useState<ColorMode>(initialMode ? initialMode : "light");
   const colorMode = useMemo(
     () => ({
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+        setMode((prevMode) => {
+          const newMode = prevMode === "light" ? "dark" : "light";
+          localStorage.setItem("theme", newMode);
+          return newMode;
+        });
       },
     }),
     [],
