@@ -131,9 +131,11 @@ export default ChatSettings;
 
 const Wrapper = styled(SwipeableDrawer)(({ theme }) => ({
   height: "100%",
-  backgroundColor: theme.palette.common.white,
   position: "absolute",
   zIndex: 1100,
+  "& .MuiPaper-root": {
+    backgroundColor: theme.palette.grey[50],
+  },
 }));
 
 const Content = styled(Box)(({ theme }) => ({

@@ -121,6 +121,7 @@ const Wrapper = styled(Box)(({ theme }) => ({
 const Header = styled(Box)(({ theme }) => ({
   height: theme.spacing(CHAT_ROOM_HEADER_SPACING),
   borderBottom: `1px solid ${theme.palette.grey[300]}`,
+  color: theme.palette.grey[900],
   padding: theme.spacing(2),
   display: "flex",
   justifyContent: "space-between",

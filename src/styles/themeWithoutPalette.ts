@@ -6,30 +6,9 @@ declare module "@mui/material/Fab" {
   }
 }
 
-const theme = createTheme({
+const themeWithoutPalette = createTheme({
   typography: {
     fontFamily: "'Noto Sans', sans-serif",
-  },
-  palette: {
-    primary: {
-      main: "#4f46e5",
-    },
-    secondary: {
-      main: "#FFFFFF",
-      light: "#FFFFFF",
-      dark: "#FFFFFF",
-    },
-    success: {
-      main: "#16a34a",
-      light: "#86efac",
-    },
-    error: {
-      main: "#ef4444",
-      light: "#fca5a5",
-    },
-    background: {
-      default: "#f8fafc",
-    },
   },
   components: {
     MuiLink: {
@@ -91,10 +70,11 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           zIndex: 1300,
+          backgroundImage: "none",
         },
       },
     },
   },
 });
 
-export default theme;
+export default themeWithoutPalette;

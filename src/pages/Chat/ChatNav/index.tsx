@@ -3,15 +3,20 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { AppBar, Box, styled } from "@mui/material";
+import { AppBar, Box, Switch, styled, Tooltip } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import { useStates } from "../../../app/stores";
 import IconAsButton from "../../../components/IconAsButton";
 import { NAV_SPACING } from "../../../constants";
 import logout from "../../../firebase/utils/logout";
+import { useColorMode } from "../../../styles/MuiProvider";
 
 // NAWIGATOR CZATU NA SAMEJ GÓRZE STRONY
 const ChatNav = () => {
+  const theme = useTheme();
+  const colorMode = useColorMode();
+
   const isChatListVisible = useStates((state) => state.isChatListVisible);
   const changeCreateNewChatVisibilityTo = useStates((state) => state.changeCreateNewChatVisibilityTo);
   const chnageChatListVisibilityTo = useStates((state) => state.chnageChatListVisibilityTo);
@@ -56,6 +61,15 @@ const ChatNav = () => {
           title="Wyloguj się"
           fabProps={{ variant: "transparent", onClick: handleLogout }}
         />
+        <Box display="flex" alignItems="center" ml={1}>
+          <Tooltip title={theme.palette.mode == "light" ? "Włącz ciemny motyw" : "Włącz jasny motyw"}>
+            <ColorModeSwitch
+              checked={theme.palette.mode == "dark"}
+              color="secondary"
+              onChange={colorMode.toggleColorMode}
+            />
+          </Tooltip>
+        </Box>
       </RightSideIconsWrapper>
     </Nav>
   );
@@ -78,4 +92,13 @@ const Nav = styled(AppBar)(({ theme }) => ({
 const RightSideIconsWrapper = styled(Box)(({ theme }) => ({
   display: "flex",
   gap: theme.spacing(0),
+}));
+
+const ColorModeSwitch = styled(Switch)(({ theme }) => ({
+  height: 42,
+  "& .MuiSwitch-thumb": {
+    boxShadow: "none",
+    width: 23,
+    height: 23,
+  },
 }));

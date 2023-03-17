@@ -11,11 +11,11 @@ import { FriendsProvider } from "./app/providers/FriendsProvider";
 import { MessagesProvider } from "./app/providers/MessagesProvider";
 import { SubscriptionProvider } from "./app/providers/SubscriptionProvider";
 import { AuthProvider } from "./firebase/hooks/useAuth";
-import theme from "./styles/theme";
+import { MuiProvider } from "./styles/MuiProvider";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
+    <MuiProvider>
       <AuthProvider>
         <CurrentUserProvider>
           <FriendsProvider>
@@ -29,6 +29,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           </FriendsProvider>
         </CurrentUserProvider>
       </AuthProvider>
-    </ThemeProvider>
+    </MuiProvider>
   </React.StrictMode>,
 );

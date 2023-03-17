@@ -19,12 +19,20 @@ const MessageBubble = ({ message, isMy }: MessageBubbleProps) => {
         <Box display="flex" flexDirection="column" justifyContent="flex-end" alignItems="center">
           <AvatarV2 name={message.author!.displayName} src={message.author!.photoURL} />
           <Tooltip title={fullDate}>
-            <Typography variant="subtitle2">{sentAt}</Typography>
+            <Typography variant="body2" color={(theme) => theme.palette.text.primary}>
+              {sentAt}
+            </Typography>
           </Tooltip>
         </Box>
 
         <MessageBubbleContentWrapper isMy={isMy}>
-          <Typography position="absolute" top={-20} left={5} variant="body2">
+          <Typography
+            position="absolute"
+            top={-23}
+            left={5}
+            variant="subtitle2"
+            color={(theme) => theme.palette.text.primary}
+          >
             {message.author!.displayName}
           </Typography>
 
