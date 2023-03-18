@@ -15,8 +15,10 @@ import {
   MenuItem,
   Select,
   SelectChangeEvent,
+  useMediaQuery,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
+import { useTheme } from "@mui/material/styles";
 
 import { useChat } from "../../app/stores";
 import AvatarV2 from "../../components/AvatarV2";
@@ -31,6 +33,8 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
   const updateChat = useChat((state) => state.updateChat);
   const getUserRole = useChat((state) => state.getUserRole);
   const currentUser = useChat((state) => state.currentUser)!;
+  const theme = useTheme();
+  const isDownSm = useMediaQuery(theme.breakpoints.down("sm"));
 
   // ZMIANA UCZESTNIKÓW CZATU
   const handleChangeParticipants = async () => {
@@ -105,7 +109,7 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
+    <Dialog open={open} onClose={onClose} fullWidth fullScreen={isDownSm}>
       <DialogTitle>Zarządzaj uczestnikami czatu</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <DialogContentText display="flex" gap={1}>
@@ -141,7 +145,10 @@ const ManageChatUsersDialog = ({ open, onClose }: { open: boolean; onClose: () =
                   <ListItemAvatar>
                     <AvatarV2 name={userValues.displayName} src={userValues.photoURL} />
                   </ListItemAvatar>
-                  <ListItemText primary={userValues.displayName} />
+                  <ListItemText
+                    primary={userValues.displayName}
+                    primaryTypographyProps={{ noWrap: true, maxWidth: "15vw" }}
+                  />
                 </ListItemButton>
               </ListItem>
             );
@@ -178,7 +185,7 @@ const SelectRole = ({ value, onChange }: { value: ChatRole; onChange: (e: Select
     <Select
       label="Age"
       variant="standard"
-      sx={{ width: 125, ml: 3 }}
+      sx={{ width: 125, ml: 1 }}
       value={value}
       onChange={onChange}
       disabled={currentUserRole != "owner"}

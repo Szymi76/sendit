@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogTitle, useMediaQuery } from "@mui/material";
 
 import { useChat } from "../../app/stores";
 

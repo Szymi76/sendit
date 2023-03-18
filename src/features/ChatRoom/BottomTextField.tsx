@@ -2,9 +2,9 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import SendIcon from "@mui/icons-material/Send";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 import { Box, ClickAwayListener, Fab, Grid, IconButton, Input, styled, Tooltip } from "@mui/material";
-import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { useMemo, useState } from "react";
-
+import { useTheme } from "@mui/material/styles";
 import { useChat } from "../../app/stores";
 import IconAsButton from "../../components/IconAsButton";
 import { CHAT_INPUT_SPACING } from "../../constants";
@@ -16,9 +16,9 @@ const BottomTextField = () => {
   const [isEmojisVisible, toggleEmojisVisibility] = useToggle();
   const [files, setFiles] = useState<File[]>([]);
   const [text, setText] = useState("");
-
   const sendMessage = useChat((state) => state.sendMessage);
   const currentChat = useChat((state) => state.currentChat)!;
+  const theme = useTheme();
 
   // WYSYŁANIE WIADOMOŚCI DO CZATU
   const handleSendMessage = async () => {
@@ -92,7 +92,7 @@ const BottomTextField = () => {
         {isEmojisVisible && (
           <ClickAwayListener onClickAway={() => toggleEmojisVisibility(false)}>
             <EmojiPickerWrapper>
-              <EmojiPicker onEmojiClick={handleEmojiClick} width="100%" />
+              <EmojiPicker onEmojiClick={handleEmojiClick} width="100%" theme={theme.palette.mode as Theme} />
             </EmojiPickerWrapper>
           </ClickAwayListener>
         )}

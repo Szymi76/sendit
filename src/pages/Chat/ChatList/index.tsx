@@ -1,5 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, Drawer, Input, styled } from "@mui/material";
+import { Box, Drawer, Input, useMediaQuery, styled } from "@mui/material";
 import React, { useMemo, useState } from "react";
 
 import { useChat, useStates } from "../../../app/stores";
@@ -9,6 +9,7 @@ import Chats from "./components/Chats";
 import FetchingChats from "./components/FetchingChats";
 import FilterActions from "./components/FilterActions";
 import { Filter, filterChats } from "./utils";
+import { useTheme } from "@mui/material/styles";
 
 // LISTA CZATÓW Z INPUTEM I FILTRAMI PO LEWEJ STRONIE
 const ChatList = () => {
@@ -22,6 +23,9 @@ const ChatList = () => {
   const subscribe = useChat((state) => state.subscribe);
   const isChatListVisible = useStates((state) => state.isChatListVisible);
   const changeCreateNewChatVisibilityTo = useStates((state) => state.changeCreateNewChatVisibilityTo);
+  const chnageChatListVisibilityTo = useStates((state) => state.chnageChatListVisibilityTo);
+  const theme = useTheme();
+  const isDownMd = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setQuery(e.target.value);
   const changeFilterTo = (arg: Filter) => setFilter(arg);
@@ -41,6 +45,7 @@ const ChatList = () => {
       const handleSelect = () => {
         subscribe(chat.id);
         changeCreateNewChatVisibilityTo(false);
+        isDownMd && chnageChatListVisibilityTo(false);
       };
       return <ChatCard key={chat.id} name={name} photo={photo} lastMessage={lastMessage} onSelect={handleSelect} />;
     });

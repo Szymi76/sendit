@@ -1,5 +1,15 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  useMediaQuery,
+} from "@mui/material";
 import { useEffect, useState } from "react";
+import { useTheme } from "@mui/material/styles";
 
 import { useChat } from "../../app/stores";
 import FileInput from "../../components/FileInput";
@@ -9,9 +19,10 @@ export type UpdateValuesTypes = { name: string; photoURL: File | null | string }
 // DIALOG DO AKTUALIZACJI INFORMACJI CZATU
 const UpdateChatDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const [updateValues, setUpdateValues] = useState<UpdateValuesTypes>({ name: "", photoURL: null });
-
   const chat = useChat((state) => state.currentChat)!;
   const updateChat = useChat((state) => state.updateChat);
+  const theme = useTheme();
+  const isDownSm = useMediaQuery(theme.breakpoints.down("sm"));
 
   // AKTUALIZOWANIE CZATU
   const handleUpdateChat = async () => {
@@ -31,7 +42,7 @@ const UpdateChatDialog = ({ open, onClose }: { open: boolean; onClose: () => voi
   }, [chat]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth>
+    <Dialog open={open} onClose={onClose} fullWidth fullScreen={isDownSm}>
       <DialogTitle>Zmień informacje czatu</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <TextField

@@ -13,7 +13,7 @@ const DeleteChatDialog = ({ open, onClose }: { open: boolean; onClose: () => voi
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} fullWidth>
       <DialogTitle>Czy na pewno chcesz usunąć ten czat?</DialogTitle>
       <DialogContent>
         <DialogContentText display="flex" gap={1}>
